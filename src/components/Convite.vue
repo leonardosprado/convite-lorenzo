@@ -445,7 +445,7 @@ onMounted(() => {
   z-index: 10;
   width: 100%;
   max-width: 430px;
-  padding: 24px 16px 40px;
+  padding: 6px 14px 10px;
   display: flex;
   justify-content: center;
 }
@@ -475,7 +475,7 @@ onMounted(() => {
   transform-style: preserve-3d;
   will-change: transform;
   transition: transform 0.15s ease-out;
-  padding-bottom: 32px;
+  padding-bottom: 10px;
 }
 
 .card-bg {
@@ -562,7 +562,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 28px 20px 0;
+  padding: 8px 20px 0;
   position: relative;
   z-index: 6;
 }
@@ -573,7 +573,7 @@ onMounted(() => {
 }
 
 .crown-emoji {
-  font-size: 44px;
+  font-size: 30px;
   filter: drop-shadow(0 4px 16px rgba(212,168,83,0.6));
   animation: crown-bounce 2.5s ease-in-out infinite;
 }
@@ -581,8 +581,8 @@ onMounted(() => {
 /* ===================== OVAL FRAME ===================== */
 .oval-frame {
   position: relative;
-  margin: 0 30px;
-  padding: 16px 20px 20px;
+  margin: 0 24px;
+  padding: 6px 16px 10px;
   border: 2px solid rgba(212,168,83,0.5);
   border-radius: 50% / 40%;
   background: rgba(255,255,255,0.2);
@@ -605,7 +605,7 @@ onMounted(() => {
 
 .cha-do {
   font-family: 'Playfair Display', serif;
-  font-size: 18px;
+  font-size: 15px;
   color: #2c3e6b;
   letter-spacing: 2px;
 }
@@ -613,16 +613,16 @@ onMounted(() => {
 .pequeno-principe {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: 22px;
+  font-size: 18px;
   color: #2c3e6b;
 }
 
 .nome-lorenzo {
   font-family: 'Dancing Script', cursive;
-  font-size: 72px;
+  font-size: 48px;
   font-weight: 700;
   color: #1a2744;
-  line-height: 1.05;
+  line-height: 1.0;
   text-shadow: 0 2px 12px rgba(44,62,107,0.2);
   letter-spacing: -1px;
 }
@@ -632,7 +632,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .ornament-line {
@@ -649,7 +649,7 @@ onMounted(() => {
 /* ===================== MENSAGEM ===================== */
 .mensagem {
   text-align: center;
-  padding: 18px 28px 10px;
+  padding: 6px 22px 4px;
   position: relative;
   z-index: 6;
 }
@@ -657,23 +657,23 @@ onMounted(() => {
 .mensagem p:first-child {
   font-family: 'Playfair Display', serif;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   color: #2c3e6b;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 }
 
 .mensagem p:last-child {
   font-family: 'Lato', sans-serif;
-  font-size: 13px;
+  font-size: 11.5px;
   color: #4a5a7a;
-  line-height: 1.7;
+  line-height: 1.55;
 }
 
 /* ===================== DIVIDER ===================== */
 .divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(212,168,83,0.4), transparent);
-  margin: 8px 24px 16px;
+  margin: 4px 24px 6px;
 }
 
 /* ===================== LISTA DE INFO ===================== */
@@ -685,53 +685,54 @@ onMounted(() => {
 
 .info-item {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 10px 0;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
 }
 
 .info-icon {
-  width: 42px;
-  height: 42px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(212,168,83,0.1);
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid rgba(212,168,83,0.3);
 }
 
 .info-icon img {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
 .icon-emoji {
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .info-text {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-top: 4px;
+  flex-direction: row;
+  gap: 4px;
+  align-items: baseline;
+  flex-wrap: wrap;
 }
 
 .info-label {
   font-family: 'Lato', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   color: #2c3e6b;
   letter-spacing: 0.5px;
 }
 
 .info-value {
   font-family: 'Lato', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: #4a5a7a;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .info-divider {
@@ -746,18 +747,18 @@ onMounted(() => {
   z-index: 6;
   display: flex;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 4px;
   pointer-events: none;
 }
 
 .menino-img {
-  width: 80%;
-  max-width: 300px;
+  width: 55%;
+  max-width: 180px;
   object-fit: contain;
   will-change: transform;
   transition: transform 0.15s ease-out;
   animation: float-hero 4s ease-in-out infinite alternate;
-  filter: drop-shadow(0 16px 32px rgba(44,62,107,0.18));
+  filter: drop-shadow(0 12px 24px rgba(44,62,107,0.18));
 }
 
 @keyframes float-hero {
@@ -768,7 +769,7 @@ onMounted(() => {
 /* ===================== RSVP ===================== */
 .rsvp-section {
   text-align: center;
-  padding: 16px 24px 8px;
+  padding: 4px 24px 2px;
   position: relative;
   z-index: 6;
 }
@@ -992,7 +993,7 @@ onMounted(() => {
 /* ===================== DESKTOP ===================== */
 @media (min-width: 480px) {
   .card-wrapper {
-    padding: 40px 16px 60px;
+    padding: 20px 16px 30px;
   }
 }
 </style>
