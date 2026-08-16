@@ -5,7 +5,7 @@
     @touchmove.passive="onTouchMove"
   >
     <div class="lost-scene" :style="sceneStyle">
-      <div class="lost-card">
+      <div class="lost-card paper">
         <div class="lost-card-bg" />
 
         <img class="deco deco-planet" :style="parallax(0.8,-12,-8)" src="/src/assets/images/planeta.png" alt="" />

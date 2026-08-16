@@ -9,5 +9,6 @@ export default createRouter({
     { path: '/',       component: Convite },
     { path: '/2',      component: ConviteScroll },
     { path: '/painel', component: Painel },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })

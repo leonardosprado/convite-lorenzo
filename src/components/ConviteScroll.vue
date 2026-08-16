@@ -59,7 +59,7 @@
           <div
             v-for="(card, i) in cards"
             :key="card.id"
-            class="s-card"
+            class="s-card paper"
             :style="cardStyle(i)"
           >
             <div class="s-card-bg" />
@@ -155,7 +155,7 @@
     <!-- ─── FASE: RSVP ─── -->
     <Transition name="rsvp-rise">
       <div v-if="convidadoOk && opened && allDone" class="rsvp-phase">
-        <div class="rsvp-card">
+        <div class="rsvp-card paper">
           <div class="rsvp-f-crown">👑</div>
           <h2 class="rsvp-f-title">Confirmar<br/>Presença</h2>
           <p class="rsvp-f-sub">Confirme até 20/09/2026</p>

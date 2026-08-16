@@ -39,7 +39,7 @@
           >
 
             <!-- ═══ FRENTE ═══ -->
-            <div v-show="!isFlipped" ref="frontRef" class="card flip-front">
+            <div v-show="!isFlipped" ref="frontRef" class="card flip-front paper">
               <div class="card-bg" />
 
               <!-- Decorações flutuantes -->
@@ -80,9 +80,10 @@
                 <span class="convidado-ornamento">✦</span>
                 <p class="convidado-para-label">para</p>
                 <p class="convidado-para-nome">{{ convidadoNome }}</p>
-                <div v-if="convidadoFralda" class="convidado-fralda">
+                <div v-if="convidadoFralda" class="convidado-fralda" :class="{ destaque: rsvpSent }">
+                  <p class="convidado-fralda-label">Sugestão de Fralda</p>
+                  <p class="convidado-fralda-tamanho">{{ convidadoFralda }}</p>
                   <p class="convidado-fralda-frase">Trocar fralda é um esporte —<br>contamos com você nessa maratona!</p>
-                  <p class="convidado-fralda-tamanho">✦ {{ convidadoFralda }} ✦</p>
                 </div>
               </div>
 
@@ -125,6 +126,11 @@
                 </template>
                 <template v-else-if="rsvpSent">
                   <div class="rsvp-confirmed-msg">🎉 Presença confirmada!<br/>Mal podemos esperar para te ver!</div>
+                  <div v-if="convidadoFralda" class="presente-box">
+                    <p class="presente-kicker">Sugestão de Fralda</p>
+                    <p class="presente-fralda">{{ convidadoFralda }}</p>
+                    <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
+                  </div>
                   <button v-if="convidadoId" class="rsvp-cancelar" @click.stop="cancelarPresenca">Não vou mais</button>
                 </template>
                 <template v-else>
@@ -143,7 +149,7 @@
             </div><!-- fim flip-front -->
 
             <!-- ═══ VERSO ═══ -->
-            <div v-show="isFlipped" ref="backRef" class="card flip-back">
+            <div v-show="isFlipped" ref="backRef" class="card flip-back paper">
 
               <!-- Mesmo fundo creme -->
               <div class="card-bg" />
@@ -194,6 +200,11 @@
                   <div class="success-icon">🎉</div>
                   <p class="success-title">Presença Confirmada!</p>
                   <p class="success-msg">Mal podemos esperar para te ver!<br/>Lorenzo já está animado! 👑</p>
+                  <div v-if="convidadoFralda" class="presente-box">
+                    <p class="presente-kicker">Sugestão de Fralda</p>
+                    <p class="presente-fralda">{{ convidadoFralda }}</p>
+                    <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
+                  </div>
                 </div>
               </form>
 
@@ -210,7 +221,7 @@
     <!-- Modal RSVP (modo 1) -->
     <Transition name="modal">
       <div v-if="showRsvp" class="modal-overlay" @click.self="showRsvp = false">
-        <div class="modal-card">
+        <div class="modal-card paper">
           <button class="modal-close" @click="showRsvp = false">✕</button>
           <div class="modal-crown">👑</div>
           <h2 class="modal-title">Confirmar Presença</h2>
@@ -249,7 +260,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { supabase } from '../supabase.js'
 import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
 
@@ -439,6 +450,16 @@ async function confirmarNoSupabase() {
     whatsapp: rsvpForm.whatsapp || null,
   }).eq('id', convidadoId)
 }
+
+function ajustarAltura() {
+  nextTick(() => {
+    if (frontRef.value && !isFlipped.value) {
+      containerHeight.value = frontRef.value.scrollHeight + 'px'
+    }
+  })
+}
+
+watch(rsvpSent, ajustarAltura)
 
 // ── init: carrega convidado + trava altura do card ────────────
 onMounted(async () => {
@@ -664,7 +685,30 @@ onMounted(async () => {
   margin: 0;
 }
 .convidado-fralda {
-  margin-top: 8px;
+  margin-top: 10px;
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  background: rgba(212,168,83,.08);
+  border: 1px solid rgba(212,168,83,.28);
+  transition: all .35s ease;
+}
+.convidado-fralda.destaque {
+  background: linear-gradient(160deg, rgba(212,168,83,.22), rgba(212,168,83,.08));
+  border-color: rgba(212,168,83,.65);
+  box-shadow: 0 0 22px rgba(212,168,83,.22);
+  padding: 14px 16px 14px;
+}
+.convidado-fralda-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #d4a853;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 4px;
+}
+.convidado-fralda.destaque .convidado-fralda-label {
+  font-size: 10px;
 }
 .convidado-fralda-frase {
   font-family: 'Playfair Display', serif;
@@ -672,15 +716,19 @@ onMounted(async () => {
   font-size: 10.5px;
   color: #5a6a8a;
   line-height: 1.55;
-  margin: 0 0 6px;
+  margin: 6px 0 0;
 }
 .convidado-fralda-tamanho {
-  font-family: 'Lato', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: #d4a853;
-  letter-spacing: 1.5px;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a2744;
+  letter-spacing: .3px;
   margin: 0;
+  line-height: 1.3;
+}
+.convidado-fralda.destaque .convidado-fralda-tamanho {
+  font-size: 18px;
 }
 
 .crown-area  { display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 20px 0; position:relative; z-index:6; }
@@ -749,10 +797,43 @@ onMounted(async () => {
 .rsvp-btn-flip:hover,.rsvp-btn-flip:active { border-color:rgba(212,168,83,.5); color:#c9962e; background:rgba(212,168,83,.04); }
 
 .rsvp-hint { font-family:'Lato',sans-serif; font-size:11px; color:rgba(44,62,107,.45); margin-top:8px; letter-spacing:.5px; }
-.rsvp-confirmed-msg { font-family:'Playfair Display',serif; font-size:15px; color:#2c3e6b; text-align:center; padding:10px 0; line-height:1.5; animation:success-pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+.rsvp-confirmed-msg { font-family:'Playfair Display',serif; font-size:15px; color:#2c3e6b; text-align:center; padding:10px 0 4px; line-height:1.5; animation:success-pop .5s cubic-bezier(.34,1.56,.64,1) both; }
 .rsvp-cancelar { display:block; margin:4px auto 0; background:none; border:none; font-family:'Lato',sans-serif; font-size:11px; color:rgba(44,62,107,.3); cursor:pointer; letter-spacing:.5px; text-decoration:underline; padding:2px; transition:color .2s; }
 .rsvp-cancelar:hover { color:rgba(44,62,107,.6); }
 @keyframes success-pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+
+.presente-box {
+  margin: 8px 0 6px;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(212,168,83,.2), rgba(212,168,83,.07));
+  border: 1.5px solid rgba(212,168,83,.55);
+  box-shadow: 0 0 24px rgba(212,168,83,.2);
+  animation: success-pop .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+.presente-kicker {
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d4a853;
+  margin: 0 0 4px;
+}
+.presente-fralda {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a2744;
+  line-height: 1.3;
+  margin: 0 0 6px;
+}
+.presente-hint {
+  font-family: 'Lato', sans-serif;
+  font-size: 12px;
+  color: #4a5a7a;
+  margin: 0;
+}
 
 /* ═══════════════════════════════════════════════
    VERSO — conteúdo

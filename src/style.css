@@ -12,3 +12,28 @@ html, body {
 #app {
   min-height: 100vh;
 }
+
+.paper {
+  isolation: isolate;
+  position: relative;
+}
+.paper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 40;
+  opacity: .48;
+  mix-blend-mode: multiply;
+  background-image:
+    url('/paper-texture.jpg'),
+    repeating-linear-gradient(
+      0deg,
+      rgba(92, 72, 40, .04) 0px,
+      rgba(92, 72, 40, .04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  background-size: 220px 220px, auto;
+}
