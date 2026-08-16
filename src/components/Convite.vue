@@ -10,9 +10,11 @@
       />
     </div>
 
+    <ConviteNaoEncontrado v-if="!buscandoConvidado && !convidadoOk" />
+
     <!-- Tela de abertura -->
     <Transition name="envelope">
-      <div v-if="!opened" class="envelope-screen" @click="openInvite">
+      <div v-if="convidadoOk && !opened" class="envelope-screen" @click="openInvite">
         <div class="envelope-wrap">
           <div class="envelope-glow" />
           <div class="crown-open">👑</div>
@@ -26,7 +28,7 @@
 
     <!-- Convite principal -->
     <Transition name="reveal">
-      <div v-if="opened" class="card-wrapper">
+      <div v-if="convidadoOk && opened" class="card-wrapper">
 
         <!-- flip-scene aplica o tilt do mouse -->
         <div class="flip-scene" :style="sceneStyle">
@@ -249,11 +251,14 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { supabase } from '../supabase.js'
+import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
 
 // ── convidado via URL (?convidado=uuid) ────────────────────────
-const convidadoId     = new URLSearchParams(window.location.search).get('convidado')
-const convidadoNome   = ref('')
-const convidadoFralda = ref('')
+const convidadoId       = new URLSearchParams(window.location.search).get('convidado')
+const convidadoNome     = ref('')
+const convidadoFralda   = ref('')
+const buscandoConvidado = ref(true)
+const convidadoOk       = ref(false)
 
 // ── estado básico ──────────────────────────────────────────────
 const opened   = ref(false)
@@ -448,8 +453,13 @@ onMounted(async () => {
       convidadoFralda.value = data.fralda || ''
       rsvpForm.nome = data.nome
       if (data.confirmado) rsvpSent.value = true
+      convidadoOk.value = true
     }
   }
+  buscandoConvidado.value = false
+
+  if (!convidadoOk.value) return
+
   const last = Number(localStorage.getItem(OPEN_KEY) || 0)
   if (Date.now() - last < OPEN_TTL) opened.value = true
 

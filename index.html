@@ -2,10 +2,63 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <meta name="theme-color" content="#f5f0e8" />
+    <meta name="theme-color" content="#1a2744" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Chá do Lorenzo" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <title>Chá do Pequeno Príncipe Lorenzo</title>
+    <meta name="title" content="Chá do Pequeno Príncipe Lorenzo" />
+    <meta name="description" content="Você está convidado para o Chá do Pequeno Príncipe Lorenzo 👑 Dia 26/09/2026 às 16h. Confirme sua presença!" />
+    <meta name="author" content="Papai e Mamãe do Lorenzo" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="/" data-abs />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="Chá do Pequeno Príncipe Lorenzo" />
+    <meta property="og:url" content="/" data-abs />
+    <meta property="og:title" content="Chá do Pequeno Príncipe Lorenzo" />
+    <meta property="og:description" content="Você está convidado para o Chá do Pequeno Príncipe Lorenzo 👑 Dia 26/09/2026 às 16h. Confirme sua presença!" />
+    <meta property="og:image" content="/og-image.png" data-abs />
+    <meta property="og:image:url" content="/og-image.png" data-abs />
+    <meta property="og:image:secure_url" content="/og-image.png" data-abs />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1196" />
+    <meta property="og:image:height" content="801" />
+    <meta property="og:image:alt" content="Convite do Chá do Pequeno Príncipe Lorenzo" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="/" data-abs />
+    <meta name="twitter:title" content="Chá do Pequeno Príncipe Lorenzo" />
+    <meta name="twitter:description" content="Você está convidado para o Chá do Pequeno Príncipe Lorenzo 👑 Dia 26/09/2026 às 16h. Confirme sua presença!" />
+    <meta name="twitter:image" content="/og-image.png" data-abs />
+    <meta name="twitter:image:alt" content="Convite do Chá do Pequeno Príncipe Lorenzo" />
+
+    <!-- Schema.org -->
+    <meta itemprop="name" content="Chá do Pequeno Príncipe Lorenzo" />
+    <meta itemprop="description" content="Você está convidado para o Chá do Pequeno Príncipe Lorenzo 👑 Dia 26/09/2026 às 16h. Confirme sua presença!" />
+    <meta itemprop="image" content="/og-image.png" data-abs />
+    <link rel="image_src" href="/og-image.png" data-abs />
+
+    <script>
+      (function () {
+        var origin = location.origin
+        document.querySelectorAll('[data-abs]').forEach(function (el) {
+          var attr = el.hasAttribute('href') ? 'href' : 'content'
+          var val = el.getAttribute(attr)
+          if (val && val.charAt(0) === '/') el.setAttribute(attr, origin + val)
+        })
+      })()
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />

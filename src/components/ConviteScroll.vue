@@ -11,9 +11,11 @@
       />
     </div>
 
+    <ConviteNaoEncontrado v-if="!buscandoConvidado && !convidadoOk" />
+
     <!-- ─── ABERTURA ─── -->
     <Transition name="envelope">
-      <div v-if="!opened" class="envelope-screen" @click="openInvite">
+      <div v-if="convidadoOk && !opened" class="envelope-screen" @click="openInvite">
         <div class="envelope-wrap">
           <div class="envelope-glow" />
           <div class="crown-open">👑</div>
@@ -40,7 +42,7 @@
     <!-- ─── FASE: CARDS ─── -->
     <Transition name="phase-fade">
       <div
-        v-if="opened && !allDone"
+        v-if="convidadoOk && opened && !allDone"
         class="card-phase"
         @touchstart.passive="onTouchStart"
         @touchmove.passive="onTouchMove"
@@ -152,7 +154,7 @@
 
     <!-- ─── FASE: RSVP ─── -->
     <Transition name="rsvp-rise">
-      <div v-if="opened && allDone" class="rsvp-phase">
+      <div v-if="convidadoOk && opened && allDone" class="rsvp-phase">
         <div class="rsvp-card">
           <div class="rsvp-f-crown">👑</div>
           <h2 class="rsvp-f-title">Confirmar<br/>Presença</h2>
@@ -197,10 +199,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { supabase } from '../supabase.js'
+import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
 
 // ── convidado via URL ─────────────────────────────────────────
-const convidadoId   = new URLSearchParams(window.location.search).get('convidado')
-const convidadoNome = ref('')
+const convidadoId       = new URLSearchParams(window.location.search).get('convidado')
+const convidadoNome     = ref('')
+const buscandoConvidado = ref(true)
+const convidadoOk       = ref(false)
 
 onMounted(async () => {
   if (convidadoId) {
@@ -216,8 +221,12 @@ onMounted(async () => {
       }
       convidadoNome.value = data.nome
       rsvpForm.nome = data.nome
+      convidadoOk.value = true
     }
   }
+  buscandoConvidado.value = false
+
+  if (!convidadoOk.value) return
 
   const last = Number(localStorage.getItem(OPEN_KEY) || 0)
   if (Date.now() - last < OPEN_TTL) opened.value = true
