@@ -9,24 +9,23 @@
 create extension if not exists "pgcrypto";
 
 create table if not exists convidados (
-  id          uuid primary key default gen_random_uuid(),
-  nome        text not null,
-  peso        int  not null default 1,   -- nº de pessoas do grupo
-  fralda      text,                       -- rótulo: "Marca - Tamanho (N un)"
-  confirmado  boolean not null default false,
-  confirmado_em timestamptz,
-  whatsapp    text,
-  observacao  text,
-  created_at  timestamptz not null default now()
+  id             uuid primary key default gen_random_uuid(),
+  nome           text not null,
+  peso           int  not null default 1,   -- nº de pessoas do grupo
+  tamanho_fralda text,                       -- P, M, G...
+  confirmado     boolean not null default false,
+  confirmado_em  timestamptz,
+  whatsapp       text,
+  observacao     text,
+  created_at     timestamptz not null default now()
 );
 
+-- Catálogo de marcas (sugestões no convite)
 create table if not exists fraldas (
-  id          uuid primary key default gen_random_uuid(),
-  nome        text not null,              -- marca / modelo
-  tamanho     text not null,              -- P, M, G...
-  quantidade  int  not null,              -- unidades sugeridas
-  created_at  timestamptz not null default now(),
-  unique (nome, tamanho, quantidade)
+  id         uuid primary key default gen_random_uuid(),
+  nome       text not null unique,           -- marca / modelo
+  foto       text,                           -- path/url da imagem
+  created_at timestamptz not null default now()
 );
 
 alter table convidados enable row level security;
@@ -37,6 +36,7 @@ drop policy if exists "convidado_confirmar" on convidados;
 drop policy if exists "admin_insert" on convidados;
 drop policy if exists "admin_delete" on convidados;
 drop policy if exists "fraldas_leitura_admin" on fraldas;
+drop policy if exists "fraldas_leitura_publica" on fraldas;
 drop policy if exists "fraldas_insert_admin" on fraldas;
 drop policy if exists "fraldas_update_admin" on fraldas;
 drop policy if exists "fraldas_delete_admin" on fraldas;
@@ -58,9 +58,9 @@ create policy "admin_delete"
   on convidados for delete
   using (auth.role() = 'authenticated');
 
-create policy "fraldas_leitura_admin"
+create policy "fraldas_leitura_publica"
   on fraldas for select
-  using (auth.role() = 'authenticated');
+  using (true);
 
 create policy "fraldas_insert_admin"
   on fraldas for insert

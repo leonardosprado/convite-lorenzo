@@ -59,17 +59,30 @@
         </div>
       </div>
 
+      <!-- Distribuição por tamanho -->
+      <div v-if="distribuicaoTamanhos.length" class="chart-wrap">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Distribuição por tamanho</h3>
+            <span class="chart-sub">{{ comTamanho }} de {{ convidados.length }} convidados</span>
+          </div>
+          <div class="chart-pie-box">
+            <Pie :data="chartData" :options="chartOptions" />
+          </div>
+        </div>
+      </div>
+
       <!-- Ações -->
       <div class="actions-row">
         <input v-model="busca" class="input-busca" placeholder="🔍  Buscar convidado..." />
         <button class="btn-primary btn-sm" @click="showAddModal = true">+ Adicionar</button>
-        <button class="btn-outline btn-sm" @click="showFraldasModal = true">Fraldas</button>
+        <button class="btn-outline btn-sm" @click="showFraldasModal = true">Marcas</button>
         <button
           class="btn-outline btn-sm"
           :class="{ 'btn-fraldas-bulk-active': editarTodasFraldas }"
           @click="toggleEditarTodasFraldas"
         >
-          {{ editarTodasFraldas ? '✓ Concluir fraldas' : 'Editar todas fraldas' }}
+          {{ editarTodasFraldas ? '✓ Concluir tamanhos' : 'Editar todos tamanhos' }}
         </button>
         <button class="btn-outline btn-sm" @click="exportarLinks">Exportar links</button>
       </div>
@@ -81,7 +94,7 @@
             <tr>
               <th>Nome</th>
               <th>Peso</th>
-              <th>Fralda</th>
+              <th>Tamanho</th>
               <th>Confirmado</th>
               <th>Link</th>
               <th></th>
@@ -97,38 +110,37 @@
               <td class="td-fralda" :class="{ 'td-fralda-bulk': editarTodasFraldas }">
                 <div class="fralda-cell" :class="{ 'fralda-cell-bulk': editarTodasFraldas }">
                   <template v-if="editarTodasFraldas">
-                    <span v-if="c.fralda" class="fralda-atual">{{ c.fralda }}</span>
-                    <span v-else class="td-empty">Sem fralda</span>
-                    <div v-if="fraldas.length" class="fralda-atalhos">
+                    <span v-if="c.tamanho_fralda" class="fralda-atual">Tamanho {{ c.tamanho_fralda }}</span>
+                    <span v-else class="td-empty">Sem tamanho</span>
+                    <div class="fralda-atalhos">
                       <button
-                        v-for="f in fraldas"
-                        :key="f.id"
+                        v-for="t in TAMANHOS"
+                        :key="t"
                         type="button"
                         class="fralda-chip"
-                        :class="{ active: c.fralda === labelFralda(f) }"
-                        :title="labelFralda(f)"
-                        @click="vincularFralda(c, labelFralda(f))"
+                        :class="{ active: c.tamanho_fralda === t }"
+                        @click="vincularTamanho(c, t)"
                       >
-                        {{ chipFralda(f) }}
+                        {{ t }}
                       </button>
                       <button
-                        v-if="c.fralda"
+                        v-if="c.tamanho_fralda"
                         type="button"
                         class="fralda-chip fralda-chip-clear"
-                        title="Remover fralda"
-                        @click="vincularFralda(c, null)"
+                        title="Remover tamanho"
+                        @click="vincularTamanho(c, null)"
                       >
                         limpar
                       </button>
                     </div>
                   </template>
                   <template v-else>
-                    <span v-if="c.fralda" class="fralda-atual">{{ c.fralda }}</span>
+                    <span v-if="c.tamanho_fralda" class="fralda-atual">{{ c.tamanho_fralda }}</span>
                     <span v-else class="td-empty">—</span>
                     <button
                       type="button"
                       class="btn-fralda-edit"
-                      title="Editar fralda"
+                      title="Editar tamanho"
                       @click="abrirEditarFralda(c)"
                     >
                       ✏️
@@ -179,18 +191,25 @@
               <input v-model.number="form.peso" type="number" min="1" max="20" required />
             </div>
             <div class="f-group">
-              <label>Fralda atribuída</label>
-              <input v-model="form.fralda" type="text" placeholder="Ex: Babysec Premium - G (60 un)" />
-              <div v-if="fraldas.length" class="fralda-atalhos fralda-atalhos-modal">
+              <label>Tamanho da fralda</label>
+              <div class="fralda-atalhos fralda-atalhos-modal">
                 <button
-                  v-for="f in fraldas"
-                  :key="f.id"
+                  v-for="t in TAMANHOS"
+                  :key="t"
                   type="button"
                   class="fralda-chip"
-                  :class="{ active: form.fralda === labelFralda(f) }"
-                  @click="form.fralda = labelFralda(f)"
+                  :class="{ active: form.tamanho_fralda === t }"
+                  @click="form.tamanho_fralda = t"
                 >
-                  {{ chipFralda(f) }}
+                  {{ t }}
+                </button>
+                <button
+                  v-if="form.tamanho_fralda"
+                  type="button"
+                  class="fralda-chip fralda-chip-clear"
+                  @click="form.tamanho_fralda = ''"
+                >
+                  limpar
                 </button>
               </div>
             </div>
@@ -213,38 +232,36 @@
       </div>
     </Transition>
 
-    <!-- MODAL EDITAR FRALDA (convidado) -->
+    <!-- MODAL EDITAR TAMANHO (convidado) -->
     <Transition name="modal">
       <div v-if="fraldaEditTarget" class="modal-overlay" @click.self="fecharEditarFralda">
-        <div class="modal-card modal-card-wide">
-          <h2 class="modal-title">Fralda — {{ fraldaEditTarget.nome }}</h2>
-          <p v-if="fraldaEditTarget.fralda" class="modal-hint">
-            Atual: <strong>{{ fraldaEditTarget.fralda }}</strong>
+        <div class="modal-card">
+          <h2 class="modal-title">Tamanho — {{ fraldaEditTarget.nome }}</h2>
+          <p v-if="fraldaEditTarget.tamanho_fralda" class="modal-hint">
+            Atual: <strong>Tamanho {{ fraldaEditTarget.tamanho_fralda }}</strong>
           </p>
-          <p v-else class="modal-hint">Nenhuma fralda vinculada ainda.</p>
-          <div v-if="fraldas.length" class="fralda-atalhos fralda-atalhos-modal fralda-atalhos-pick">
+          <p v-else class="modal-hint">Nenhum tamanho definido ainda.</p>
+          <div class="fralda-atalhos fralda-atalhos-modal fralda-atalhos-pick">
             <button
-              v-for="f in fraldas"
-              :key="f.id"
+              v-for="t in TAMANHOS"
+              :key="t"
               type="button"
               class="fralda-chip"
-              :class="{ active: fraldaEditTarget.fralda === labelFralda(f) }"
-              :title="labelFralda(f)"
-              @click="escolherFralda(labelFralda(f))"
+              :class="{ active: fraldaEditTarget.tamanho_fralda === t }"
+              @click="escolherTamanho(t)"
             >
-              {{ chipFralda(f) }}
+              {{ t }}
             </button>
             <button
-              v-if="fraldaEditTarget.fralda"
+              v-if="fraldaEditTarget.tamanho_fralda"
               type="button"
               class="fralda-chip fralda-chip-clear"
-              title="Remover fralda"
-              @click="escolherFralda(null)"
+              title="Remover tamanho"
+              @click="escolherTamanho(null)"
             >
               limpar
             </button>
           </div>
-          <p v-else class="modal-hint">Cadastre fraldas no botão <strong>Fraldas</strong> do painel.</p>
           <div class="modal-footer">
             <button type="button" class="btn-outline" @click="fecharEditarFralda">Fechar</button>
           </div>
@@ -252,17 +269,15 @@
       </div>
     </Transition>
 
-    <!-- MODAL FRALDAS (catálogo) -->
+    <!-- MODAL FRALDAS (catálogo de marcas) -->
     <Transition name="modal">
       <div v-if="showFraldasModal" class="modal-overlay" @click.self="showFraldasModal = false">
         <div class="modal-card modal-card-wide">
-          <h2 class="modal-title">Catálogo de fraldas</h2>
-          <p class="modal-hint">Cadastre aqui e use os atalhos na tabela / no formulário do convidado.</p>
+          <h2 class="modal-title">Marcas de fralda</h2>
+          <p class="modal-hint">Aparecem como sugestões no convite. Fotos em <code>src/assets/fraldas/</code>.</p>
           <form class="fraldas-add-form" @submit.prevent="adicionarFralda">
-            <input v-model="novaFralda.nome" type="text" placeholder="Marca / modelo" required />
             <div class="fraldas-add-row">
-              <input v-model="novaFralda.tamanho" type="text" placeholder="Tam. (ex: G)" required />
-              <input v-model.number="novaFralda.quantidade" type="number" min="1" placeholder="Qtd" required />
+              <input v-model="novaFralda.nome" type="text" placeholder="Marca / modelo" required />
               <button type="submit" class="btn-primary btn-sm" :disabled="salvandoFralda">
                 {{ salvandoFralda ? '...' : 'Adicionar' }}
               </button>
@@ -270,10 +285,10 @@
           </form>
           <ul class="fraldas-lista">
             <li v-for="f in fraldas" :key="f.id">
-              <span>{{ labelFralda(f) }}</span>
+              <span>{{ f.nome }}</span>
               <button type="button" class="btn-icon btn-del" title="Excluir" @click="excluirFralda(f)">🗑</button>
             </li>
-            <li v-if="!fraldas.length" class="fraldas-lista-empty">Nenhuma fralda cadastrada.</li>
+            <li v-if="!fraldas.length" class="fraldas-lista-empty">Nenhuma marca cadastrada.</li>
           </ul>
           <div class="modal-footer">
             <button type="button" class="btn-outline" @click="showFraldasModal = false">Fechar</button>
@@ -292,7 +307,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Pie } from 'vue-chartjs'
 import { supabase } from '../supabase.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 // ── auth ───────────────────────────────────────────────────────
 const session    = ref(null)
@@ -343,7 +362,7 @@ const convidadosFiltrados = computed(() => {
   if (!q) return convidados.value
   return convidados.value.filter(c =>
     c.nome.toLowerCase().includes(q) ||
-    (c.fralda || '').toLowerCase().includes(q)
+    (c.tamanho_fralda || '').toLowerCase().includes(q)
   )
 })
 
@@ -352,6 +371,98 @@ const totalPessoas      = computed(() => convidados.value.reduce((s, c) => s + c
 const pessoasConfirmadas = computed(() =>
   convidados.value.filter(c => c.confirmado).reduce((s, c) => s + c.peso, 0)
 )
+
+const TAMANHOS = ['RN', 'P', 'M', 'G', 'XG', 'XXG']
+const CORES_TAMANHO = {
+  RN: '#9b8ec4',
+  P:  '#5b8def',
+  M:  '#d4a853',
+  G:  '#2c3e6b',
+  XG: '#c45c26',
+  XXG:'#1a2744',
+}
+
+const comTamanho = computed(() =>
+  convidados.value.filter(c => c.tamanho_fralda).length
+)
+
+const distribuicaoTamanhos = computed(() => {
+  const total = convidados.value.length
+  if (!total) return []
+
+  const contagem = {}
+  for (const c of convidados.value) {
+    const t = c.tamanho_fralda
+    if (!t) continue
+    contagem[t] = (contagem[t] || 0) + 1
+  }
+
+  const ordem = [...TAMANHOS]
+  const extras = Object.keys(contagem).filter(t => !ordem.includes(t)).sort()
+  return [...ordem, ...extras]
+    .filter(t => contagem[t])
+    .map(t => ({
+      tamanho: t,
+      qtd: contagem[t],
+      pct: Math.round((contagem[t] / total) * 1000) / 10,
+      cor: CORES_TAMANHO[t] || '#4a5a7a',
+    }))
+})
+
+const chartData = computed(() => ({
+  labels: distribuicaoTamanhos.value.map(i => `Tamanho ${i.tamanho}`),
+  datasets: [{
+    data: distribuicaoTamanhos.value.map(i => i.qtd),
+    backgroundColor: distribuicaoTamanhos.value.map(i => i.cor),
+    borderColor: '#fff',
+    borderWidth: 2,
+    hoverOffset: 6,
+  }],
+}))
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: {
+    legend: {
+      position: 'right',
+      labels: {
+        font: { family: "'Lato', sans-serif", size: 12 },
+        color: '#1a2744',
+        padding: 14,
+        usePointStyle: true,
+        pointStyle: 'circle',
+        generateLabels(chart) {
+          const data = chart.data
+          if (!data.labels?.length || !data.datasets?.length) return []
+          const ds = data.datasets[0]
+          const total = ds.data.reduce((a, b) => a + b, 0) || 1
+          return data.labels.map((label, i) => {
+            const qtd = ds.data[i]
+            const pct = Math.round((qtd / total) * 1000) / 10
+            return {
+              text: `${label} — ${qtd} (${pct}%)`,
+              fillStyle: ds.backgroundColor[i],
+              strokeStyle: '#fff',
+              lineWidth: 1,
+              hidden: false,
+              index: i,
+            }
+          })
+        },
+      },
+    },
+    tooltip: {
+      callbacks: {
+        label(ctx) {
+          const total = ctx.dataset.data.reduce((a, b) => a + b, 0) || 1
+          const pct = Math.round((ctx.raw / total) * 1000) / 10
+          return ` ${ctx.label}: ${ctx.raw} convidados (${pct}%)`
+        },
+      },
+    },
+  },
+}
 
 async function carregarConvidados() {
   loading.value = true
@@ -363,50 +474,33 @@ async function carregarConvidados() {
   loading.value = false
 }
 
-// ── fraldas (catálogo) ────────────────────────────────────────
+// ── fraldas (catálogo de marcas) + tamanho do convidado ───────
 const fraldas          = ref([])
 const showFraldasModal = ref(false)
 const fraldaEditTarget = ref(null)
 const editarTodasFraldas = ref(false)
-const novaFralda       = reactive({ nome: '', tamanho: '', quantidade: 50 })
+const novaFralda       = reactive({ nome: '' })
 const salvandoFralda   = ref(false)
-
-function labelFralda(f) {
-  return `${f.nome} - ${f.tamanho} (${f.quantidade} un)`
-}
-
-function chipFralda(f) {
-  const abrev = {
-    'MamyPoko Fralda Calça Super Proteção': 'MP Super',
-    'MamyPoko Fralda Calça Dia & Noite': 'MP Dia/Noite',
-    'Pampers Confort Sec': 'Confort Sec',
-    'Pampers': 'Pampers',
-    'Babysec Premium': 'Babysec',
-  }
-  return `${abrev[f.nome] || f.nome} ${f.tamanho}·${f.quantidade}`
-}
 
 async function carregarFraldas() {
   const { data } = await supabase
     .from('fraldas')
     .select('*')
     .order('nome')
-    .order('tamanho')
-    .order('quantidade')
   fraldas.value = data || []
 }
 
-async function vincularFralda(convidado, nomeFralda) {
+async function vincularTamanho(convidado, tamanho) {
   const { error } = await supabase
     .from('convidados')
-    .update({ fralda: nomeFralda })
+    .update({ tamanho_fralda: tamanho })
     .eq('id', convidado.id)
   if (error) {
-    showToast('Erro ao vincular fralda.')
+    showToast('Erro ao salvar tamanho.')
     return false
   }
-  convidado.fralda = nomeFralda
-  showToast(nomeFralda ? `Fralda vinculada a ${convidado.nome}` : `Fralda removida de ${convidado.nome}`)
+  convidado.tamanho_fralda = tamanho
+  showToast(tamanho ? `Tamanho ${tamanho} → ${convidado.nome}` : `Tamanho removido de ${convidado.nome}`)
   return true
 }
 
@@ -423,33 +517,31 @@ function toggleEditarTodasFraldas() {
   if (editarTodasFraldas.value) fecharEditarFralda()
 }
 
-async function escolherFralda(nomeFralda) {
+async function escolherTamanho(tamanho) {
   if (!fraldaEditTarget.value) return
-  const ok = await vincularFralda(fraldaEditTarget.value, nomeFralda)
+  const ok = await vincularTamanho(fraldaEditTarget.value, tamanho)
   if (ok) fecharEditarFralda()
 }
 
 async function adicionarFralda() {
   const nome = novaFralda.nome.trim()
-  const tamanho = novaFralda.tamanho.trim().toUpperCase()
-  const quantidade = Number(novaFralda.quantidade)
-  if (!nome || !tamanho || !quantidade) return
+  if (!nome) return
   salvandoFralda.value = true
-  const { error } = await supabase.from('fraldas').insert({ nome, tamanho, quantidade })
+  const { error } = await supabase.from('fraldas').insert({ nome })
   salvandoFralda.value = false
   if (error) {
-    showToast(error.code === '23505' ? 'Essa fralda já existe.' : 'Erro ao adicionar fralda.')
+    showToast(error.code === '23505' ? 'Essa marca já existe.' : 'Erro ao adicionar marca.')
     return
   }
-  Object.assign(novaFralda, { nome: '', tamanho: '', quantidade: 50 })
-  showToast('Fralda cadastrada!')
+  novaFralda.nome = ''
+  showToast('Marca cadastrada!')
   carregarFraldas()
 }
 
 async function excluirFralda(f) {
-  if (!confirm(`Excluir "${labelFralda(f)}" do catálogo?`)) return
+  if (!confirm(`Excluir "${f.nome}" do catálogo?`)) return
   await supabase.from('fraldas').delete().eq('id', f.id)
-  showToast('Fralda removida do catálogo.')
+  showToast('Marca removida do catálogo.')
   carregarFraldas()
 }
 
@@ -461,9 +553,29 @@ function linkFor(c, modelo = 1) {
     : `${base}/?convidado=${c.id}`
 }
 
+async function copiarTexto(texto) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(texto)
+    return
+  }
+
+  const el = document.createElement('textarea')
+  el.value = texto
+  el.setAttribute('readonly', '')
+  el.style.position = 'fixed'
+  el.style.left = '-9999px'
+  document.body.appendChild(el)
+  el.select()
+  const ok = document.execCommand('copy')
+  document.body.removeChild(el)
+  if (!ok) throw new Error('copy failed')
+}
+
 function copiarLink(c, modelo = 1) {
-  navigator.clipboard.writeText(linkFor(c, modelo))
-  showToast(`Link ${modelo === 2 ? '(Convite 2) ' : ''}de ${c.nome} copiado!`)
+  const link = linkFor(c, modelo)
+  copiarTexto(link)
+    .then(() => showToast(`Link ${modelo === 2 ? '(Convite 2) ' : ''}de ${c.nome} copiado!`))
+    .catch(() => showToast('Não foi possível copiar. Tente de novo.'))
 }
 
 function exportarLinks() {
@@ -479,22 +591,22 @@ function exportarLinks() {
 const showAddModal = ref(false)
 const editTarget   = ref(null)
 const salvando     = ref(false)
-const form         = reactive({ nome: '', peso: 1, fralda: '', whatsapp: '', observacao: '' })
+const form         = reactive({ nome: '', peso: 1, tamanho_fralda: '', whatsapp: '', observacao: '' })
 
 function editarConvidado(c) {
   editTarget.value = c
-  Object.assign(form, { nome: c.nome, peso: c.peso, fralda: c.fralda || '', whatsapp: c.whatsapp || '', observacao: c.observacao || '' })
+  Object.assign(form, { nome: c.nome, peso: c.peso, tamanho_fralda: c.tamanho_fralda || '', whatsapp: c.whatsapp || '', observacao: c.observacao || '' })
 }
 
 function fecharModal() {
   showAddModal.value = false
   editTarget.value   = null
-  Object.assign(form, { nome: '', peso: 1, fralda: '', whatsapp: '', observacao: '' })
+  Object.assign(form, { nome: '', peso: 1, tamanho_fralda: '', whatsapp: '', observacao: '' })
 }
 
 async function salvarConvidado() {
   salvando.value = true
-  const payload = { nome: form.nome, peso: form.peso, fralda: form.fralda || null, whatsapp: form.whatsapp || null, observacao: form.observacao || null }
+  const payload = { nome: form.nome, peso: form.peso, tamanho_fralda: form.tamanho_fralda || null, whatsapp: form.whatsapp || null, observacao: form.observacao || null }
 
   if (editTarget.value) {
     await supabase.from('convidados').update(payload).eq('id', editTarget.value.id)
@@ -666,6 +778,46 @@ function formatDate(iso) {
 .stat-value { font-family: 'Dancing Script', cursive; font-size: 36px; color: #1a2744; line-height: 1; }
 .stat-confirmed .stat-value { color: #28a745; }
 .stat-label { font-size: 11px; color: #4a5a7a; letter-spacing: .5px; margin-top: 2px; }
+
+/* ══════════════════════════════════
+   GRÁFICO TAMANHOS (Chart.js pizza)
+══════════════════════════════════ */
+.chart-wrap {
+  padding: 16px 24px 0;
+}
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(212,168,83,.2);
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.chart-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: #1a2744;
+  margin: 0;
+}
+.chart-sub {
+  font-size: 12px;
+  color: #4a5a7a;
+}
+.chart-pie-box {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 8px 0 4px;
+}
+@media (max-width: 600px) {
+  .chart-pie-box { max-width: 280px; }
+}
 
 /* ══════════════════════════════════
    AÇÕES
@@ -889,8 +1041,7 @@ function formatDate(iso) {
   display: flex;
   gap: 8px;
 }
-.fraldas-add-row input:first-child { width: 90px; flex: 0 0 90px; }
-.fraldas-add-row input:nth-child(2) { width: 80px; flex: 0 0 80px; }
+.fraldas-add-row input { flex: 1; }
 .fraldas-lista {
   list-style: none;
   margin: 0 0 12px;

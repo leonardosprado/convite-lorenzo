@@ -80,15 +80,25 @@
                 <span class="convidado-ornamento">✦</span>
                 <p class="convidado-para-label">para</p>
                 <p class="convidado-para-nome">{{ convidadoNome }}</p>
-                <div v-if="fraldaInfo && !rsvpSent" class="convidado-fralda">
+                <div v-if="fraldaTamanho && !rsvpSent" class="convidado-fralda">
                   <p class="convidado-fralda-label">Sugestão de Fralda</p>
-                  <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho">
-                    Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                  <p class="fralda-display-tamanho">
+                    Tamanho <span>{{ fraldaTamanho }}</span>
                   </p>
-                  <p class="fralda-display-marca">{{ fraldaInfo.marca }}</p>
-                  <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd">
-                    cerca de {{ fraldaInfo.quantidade }} unidades
-                  </p>
+                  <div v-if="marcasFralda.length" class="fralda-marcas">
+                    <p class="fralda-marcas-label">Sugestões</p>
+                    <ul class="fralda-marcas-lista">
+                      <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
+                    </ul>
+                    <button
+                      v-if="temMaisMarcas"
+                      type="button"
+                      class="fralda-ver-mais"
+                      @click.stop="toggleFraldasExpandidas"
+                    >
+                      {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
+                    </button>
+                  </div>
                   <p class="convidado-fralda-frase">Trocar fralda é um esporte —<br>contamos com você nessa maratona!</p>
                 </div>
               </div>
@@ -132,16 +142,25 @@
                 </template>
                 <template v-else-if="rsvpSent">
                   <div class="rsvp-confirmed-msg">🎉 Presença confirmada!<br/>Mal podemos esperar para te ver!</div>
-                  <div v-if="fraldaInfo" class="presente-box">
+                  <div v-if="fraldaTamanho" class="presente-box">
                     <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho presente-tamanho">
-                      Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                    <p class="fralda-display-tamanho presente-tamanho">
+                      Tamanho <span>{{ fraldaTamanho }}</span>
                     </p>
-                    <p class="fralda-display-marca presente-marca">{{ fraldaInfo.marca }}</p>
-                    <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd presente-qtd">
-                      cerca de {{ fraldaInfo.quantidade }} unidades
-                    </p>
-                    <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
+                    <div v-if="marcasFralda.length" class="fralda-marcas">
+                      <p class="fralda-marcas-label">Sugestões</p>
+                      <ul class="fralda-marcas-lista">
+                        <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
+                      </ul>
+                      <button
+                        v-if="temMaisMarcas"
+                        type="button"
+                        class="fralda-ver-mais"
+                        @click.stop="toggleFraldasExpandidas"
+                      >
+                        {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
+                      </button>
+                    </div>
                   </div>
                   <button v-if="convidadoId" class="rsvp-cancelar" @click.stop="cancelarPresenca">Não vou mais</button>
                 </template>
@@ -212,16 +231,25 @@
                   <div class="success-icon">🎉</div>
                   <p class="success-title">Presença Confirmada!</p>
                   <p class="success-msg">Mal podemos esperar para te ver!<br/>Lorenzo já está animado! 👑</p>
-                  <div v-if="fraldaInfo" class="presente-box">
+                  <div v-if="fraldaTamanho" class="presente-box">
                     <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho presente-tamanho">
-                      Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                    <p class="fralda-display-tamanho presente-tamanho">
+                      Tamanho <span>{{ fraldaTamanho }}</span>
                     </p>
-                    <p class="fralda-display-marca presente-marca">{{ fraldaInfo.marca }}</p>
-                    <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd presente-qtd">
-                      cerca de {{ fraldaInfo.quantidade }} unidades
-                    </p>
-                    <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
+                    <div v-if="marcasFralda.length" class="fralda-marcas">
+                      <p class="fralda-marcas-label">Sugestões</p>
+                      <ul class="fralda-marcas-lista">
+                        <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
+                      </ul>
+                      <button
+                        v-if="temMaisMarcas"
+                        type="button"
+                        class="fralda-ver-mais"
+                        @click.stop="toggleFraldasExpandidas"
+                      >
+                        {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -285,18 +313,41 @@ import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
 // ── convidado via URL (?convidado=uuid) ────────────────────────
 const convidadoId       = new URLSearchParams(window.location.search).get('convidado')
 const convidadoNome     = ref('')
-const convidadoFralda   = ref('')
+const fraldaTamanho     = ref('')
+const marcasFralda        = ref([])
+const marcasSorteadas     = ref([])
+const fraldasExpandidas   = ref(false)
 const buscandoConvidado = ref(true)
 const convidadoOk       = ref(false)
 
-function parseFralda(raw) {
-  if (!raw) return null
-  const m = raw.match(/^(.+?)\s*-\s*(\S+)\s*\((\d+)\s*un\)$/)
-  if (m) return { marca: m[1].trim(), tamanho: m[2].trim(), quantidade: m[3] }
-  return { marca: raw, tamanho: null, quantidade: null }
+function sortearMarcas(lista, qtd = 3) {
+  const copia = [...lista]
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copia[i], copia[j]] = [copia[j], copia[i]]
+  }
+  return copia.slice(0, Math.min(qtd, copia.length))
 }
 
-const fraldaInfo = computed(() => parseFralda(convidadoFralda.value))
+const marcasVisiveis = computed(() =>
+  fraldasExpandidas.value ? marcasFralda.value : marcasSorteadas.value
+)
+
+const temMaisMarcas = computed(() => marcasFralda.value.length > 3)
+
+function toggleFraldasExpandidas() {
+  fraldasExpandidas.value = !fraldasExpandidas.value
+}
+
+async function carregarMarcasFralda() {
+  const { data } = await supabase
+    .from('fraldas')
+    .select('nome')
+    .order('nome')
+  const nomes = (data || []).map(f => f.nome)
+  marcasFralda.value = nomes
+  marcasSorteadas.value = sortearMarcas(nomes, 3)
+}
 
 // ── estado básico ──────────────────────────────────────────────
 const opened   = ref(false)
@@ -491,14 +542,17 @@ watch(rsvpSent, ajustarAltura)
 // ── init: carrega convidado + trava altura do card ────────────
 onMounted(async () => {
   if (convidadoId) {
-    const { data } = await supabase
-      .from('convidados')
-      .select('nome, fralda, confirmado')
-      .eq('id', convidadoId)
-      .single()
+    const [{ data }, ] = await Promise.all([
+      supabase
+        .from('convidados')
+        .select('nome, tamanho_fralda, confirmado')
+        .eq('id', convidadoId)
+        .single(),
+      carregarMarcasFralda(),
+    ])
     if (data) {
       convidadoNome.value = data.nome
-      convidadoFralda.value = data.fralda || ''
+      fraldaTamanho.value = data.tamanho_fralda || ''
       rsvpForm.nome = data.nome
       if (data.confirmado) rsvpSent.value = true
       convidadoOk.value = true
@@ -756,24 +810,54 @@ onMounted(async () => {
   line-height: 1;
   margin-top: 2px;
 }
-.fralda-display-marca {
-  font-family: 'Playfair Display', serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #4a5a7a;
-  line-height: 1.35;
-  margin: 4px 0 0;
+.fralda-marcas {
+  margin-top: 8px;
+  text-align: left;
 }
-.fralda-display-qtd {
+.fralda-marcas-label {
   font-family: 'Lato', sans-serif;
   font-size: 9px;
-  color: rgba(74, 90, 122, .5);
-  margin: 3px 0 0;
-  letter-spacing: .2px;
+  font-weight: 700;
+  color: rgba(74, 90, 122, .55);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0 0 4px;
 }
+.fralda-marcas-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.fralda-marcas-lista li {
+  font-family: 'Playfair Display', serif;
+  font-size: 12px;
+  color: #4a5a7a;
+  line-height: 1.45;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(212,168,83,.15);
+}
+.fralda-marcas-lista li:last-child { border-bottom: none; }
+.fralda-ver-mais {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 4px 0 0;
+  background: none;
+  border: none;
+  border-top: 1px dashed rgba(212,168,83,.35);
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #d4a853;
+  letter-spacing: .3px;
+  cursor: pointer;
+  text-align: center;
+  transition: color .2s;
+}
+.fralda-ver-mais:hover { color: #a07820; }
 .presente-tamanho span { font-size: 38px; }
-.presente-marca { font-size: 14px; }
-.presente-qtd { font-size: 9px; margin-bottom: 2px; }
+.presente-box .fralda-marcas { margin-top: 10px; }
+.presente-box .fralda-marcas-lista li { font-size: 13px; }
 
 .crown-area  { display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 20px 0; position:relative; z-index:6; }
 .crown-img   { width:24px; opacity:.7; }
@@ -863,12 +947,6 @@ onMounted(async () => {
   text-transform: uppercase;
   color: #d4a853;
   margin: 0 0 6px;
-}
-.presente-hint {
-  font-family: 'Lato', sans-serif;
-  font-size: 12px;
-  color: #4a5a7a;
-  margin: 0;
 }
 
 /* ═══════════════════════════════════════════════
