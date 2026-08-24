@@ -8,17 +8,17 @@
       <div class="lost-card paper">
         <div class="lost-card-bg" />
 
-        <img class="deco deco-planet" :style="parallax(0.8,-12,-8)" src="/src/assets/images/planeta.png" alt="" />
-        <img class="deco deco-star deco-star-1" :style="parallax(1.2, 8, 5)" src="/src/assets/images/estrela.png" alt="" />
-        <img class="deco deco-star deco-star-2" :style="parallax(0.6,-5,10)" src="/src/assets/images/estrela.png" alt="" />
-        <img class="deco deco-cloud deco-cloud-1" :style="parallax(0.5, 5,-5)" src="/src/assets/images/nuvem.png" alt="" />
-        <img class="deco deco-cloud deco-cloud-2" :style="parallax(0.4,-8, 8)" src="/src/assets/images/nuvem.png" alt="" />
-        <img class="deco deco-cloud deco-cloud-3" :style="parallax(0.7, 6,-3)" src="/src/assets/images/nuvem.png" alt="" />
+        <img class="deco deco-planet" :style="parallax(0.8,-12,-8)" src="../assets/images/planeta.png" alt="" />
+        <img class="deco deco-star deco-star-1" :style="parallax(1.2, 8, 5)" src="../assets/images/estrela.png" alt="" />
+        <img class="deco deco-star deco-star-2" :style="parallax(0.6,-5,10)" src="../assets/images/estrela.png" alt="" />
+        <img class="deco deco-cloud deco-cloud-1" :style="parallax(0.5, 5,-5)" src="../assets/images/nuvem.png" alt="" />
+        <img class="deco deco-cloud deco-cloud-2" :style="parallax(0.4,-8, 8)" src="../assets/images/nuvem.png" alt="" />
+        <img class="deco deco-cloud deco-cloud-3" :style="parallax(0.7, 6,-3)" src="../assets/images/nuvem.png" alt="" />
 
         <div class="crown-area">
-          <img class="crown-img" src="/src/assets/images/estrela.png" alt="" />
+          <img class="crown-img" src="../assets/images/estrela.png" alt="" />
           <div class="crown-emoji">👑</div>
-          <img class="crown-img" src="/src/assets/images/estrela.png" alt="" />
+          <img class="crown-img" src="../assets/images/estrela.png" alt="" />
         </div>
 
         <div class="oval-frame">
@@ -40,7 +40,7 @@
         <div class="divider" />
 
         <div class="illustration-area">
-          <img class="menino-img" :style="parallax(1.0,-3,2)" src="/src/assets/images/menino-com-gato.png" alt="Pequeno Príncipe" />
+          <img class="menino-img" :style="parallax(1.0,-3,2)" src="../assets/images/menino-com-gato.png" alt="Pequeno Príncipe" />
         </div>
 
         <div class="rsvp-section">

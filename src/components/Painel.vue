@@ -63,6 +63,14 @@
       <div class="actions-row">
         <input v-model="busca" class="input-busca" placeholder="🔍  Buscar convidado..." />
         <button class="btn-primary btn-sm" @click="showAddModal = true">+ Adicionar</button>
+        <button class="btn-outline btn-sm" @click="showFraldasModal = true">Fraldas</button>
+        <button
+          class="btn-outline btn-sm"
+          :class="{ 'btn-fraldas-bulk-active': editarTodasFraldas }"
+          @click="toggleEditarTodasFraldas"
+        >
+          {{ editarTodasFraldas ? '✓ Concluir fraldas' : 'Editar todas fraldas' }}
+        </button>
         <button class="btn-outline btn-sm" @click="exportarLinks">Exportar links</button>
       </div>
 
@@ -86,9 +94,47 @@
                 <span v-if="c.whatsapp" class="td-zap">📱 {{ c.whatsapp }}</span>
               </td>
               <td class="td-peso">{{ c.peso }} pess.</td>
-              <td class="td-fralda">
-                <span v-if="c.fralda">{{ c.fralda }}</span>
-                <span v-else class="td-empty">—</span>
+              <td class="td-fralda" :class="{ 'td-fralda-bulk': editarTodasFraldas }">
+                <div class="fralda-cell" :class="{ 'fralda-cell-bulk': editarTodasFraldas }">
+                  <template v-if="editarTodasFraldas">
+                    <span v-if="c.fralda" class="fralda-atual">{{ c.fralda }}</span>
+                    <span v-else class="td-empty">Sem fralda</span>
+                    <div v-if="fraldas.length" class="fralda-atalhos">
+                      <button
+                        v-for="f in fraldas"
+                        :key="f.id"
+                        type="button"
+                        class="fralda-chip"
+                        :class="{ active: c.fralda === labelFralda(f) }"
+                        :title="labelFralda(f)"
+                        @click="vincularFralda(c, labelFralda(f))"
+                      >
+                        {{ chipFralda(f) }}
+                      </button>
+                      <button
+                        v-if="c.fralda"
+                        type="button"
+                        class="fralda-chip fralda-chip-clear"
+                        title="Remover fralda"
+                        @click="vincularFralda(c, null)"
+                      >
+                        limpar
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span v-if="c.fralda" class="fralda-atual">{{ c.fralda }}</span>
+                    <span v-else class="td-empty">—</span>
+                    <button
+                      type="button"
+                      class="btn-fralda-edit"
+                      title="Editar fralda"
+                      @click="abrirEditarFralda(c)"
+                    >
+                      ✏️
+                    </button>
+                  </template>
+                </div>
               </td>
               <td class="td-status">
                 <span class="badge" :class="c.confirmado ? 'badge-ok' : 'badge-pend'">
@@ -134,7 +180,19 @@
             </div>
             <div class="f-group">
               <label>Fralda atribuída</label>
-              <input v-model="form.fralda" type="text" placeholder="Ex: Pampers Pants - Tamanho M" />
+              <input v-model="form.fralda" type="text" placeholder="Ex: Babysec Premium - G (60 un)" />
+              <div v-if="fraldas.length" class="fralda-atalhos fralda-atalhos-modal">
+                <button
+                  v-for="f in fraldas"
+                  :key="f.id"
+                  type="button"
+                  class="fralda-chip"
+                  :class="{ active: form.fralda === labelFralda(f) }"
+                  @click="form.fralda = labelFralda(f)"
+                >
+                  {{ chipFralda(f) }}
+                </button>
+              </div>
             </div>
             <div class="f-group">
               <label>WhatsApp (opcional)</label>
@@ -151,6 +209,75 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- MODAL EDITAR FRALDA (convidado) -->
+    <Transition name="modal">
+      <div v-if="fraldaEditTarget" class="modal-overlay" @click.self="fecharEditarFralda">
+        <div class="modal-card modal-card-wide">
+          <h2 class="modal-title">Fralda — {{ fraldaEditTarget.nome }}</h2>
+          <p v-if="fraldaEditTarget.fralda" class="modal-hint">
+            Atual: <strong>{{ fraldaEditTarget.fralda }}</strong>
+          </p>
+          <p v-else class="modal-hint">Nenhuma fralda vinculada ainda.</p>
+          <div v-if="fraldas.length" class="fralda-atalhos fralda-atalhos-modal fralda-atalhos-pick">
+            <button
+              v-for="f in fraldas"
+              :key="f.id"
+              type="button"
+              class="fralda-chip"
+              :class="{ active: fraldaEditTarget.fralda === labelFralda(f) }"
+              :title="labelFralda(f)"
+              @click="escolherFralda(labelFralda(f))"
+            >
+              {{ chipFralda(f) }}
+            </button>
+            <button
+              v-if="fraldaEditTarget.fralda"
+              type="button"
+              class="fralda-chip fralda-chip-clear"
+              title="Remover fralda"
+              @click="escolherFralda(null)"
+            >
+              limpar
+            </button>
+          </div>
+          <p v-else class="modal-hint">Cadastre fraldas no botão <strong>Fraldas</strong> do painel.</p>
+          <div class="modal-footer">
+            <button type="button" class="btn-outline" @click="fecharEditarFralda">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- MODAL FRALDAS (catálogo) -->
+    <Transition name="modal">
+      <div v-if="showFraldasModal" class="modal-overlay" @click.self="showFraldasModal = false">
+        <div class="modal-card modal-card-wide">
+          <h2 class="modal-title">Catálogo de fraldas</h2>
+          <p class="modal-hint">Cadastre aqui e use os atalhos na tabela / no formulário do convidado.</p>
+          <form class="fraldas-add-form" @submit.prevent="adicionarFralda">
+            <input v-model="novaFralda.nome" type="text" placeholder="Marca / modelo" required />
+            <div class="fraldas-add-row">
+              <input v-model="novaFralda.tamanho" type="text" placeholder="Tam. (ex: G)" required />
+              <input v-model.number="novaFralda.quantidade" type="number" min="1" placeholder="Qtd" required />
+              <button type="submit" class="btn-primary btn-sm" :disabled="salvandoFralda">
+                {{ salvandoFralda ? '...' : 'Adicionar' }}
+              </button>
+            </div>
+          </form>
+          <ul class="fraldas-lista">
+            <li v-for="f in fraldas" :key="f.id">
+              <span>{{ labelFralda(f) }}</span>
+              <button type="button" class="btn-icon btn-del" title="Excluir" @click="excluirFralda(f)">🗑</button>
+            </li>
+            <li v-if="!fraldas.length" class="fraldas-lista-empty">Nenhuma fralda cadastrada.</li>
+          </ul>
+          <div class="modal-footer">
+            <button type="button" class="btn-outline" @click="showFraldasModal = false">Fechar</button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -176,11 +303,17 @@ const loginLoading = ref(false)
 onMounted(async () => {
   const { data } = await supabase.auth.getSession()
   session.value = data.session
-  if (session.value) carregarConvidados()
+  if (session.value) {
+    carregarConvidados()
+    carregarFraldas()
+  }
 
   supabase.auth.onAuthStateChange((_, s) => {
     session.value = s
-    if (s) carregarConvidados()
+    if (s) {
+      carregarConvidados()
+      carregarFraldas()
+    }
   })
 })
 
@@ -228,6 +361,96 @@ async function carregarConvidados() {
     .order('nome')
   convidados.value = data || []
   loading.value = false
+}
+
+// ── fraldas (catálogo) ────────────────────────────────────────
+const fraldas          = ref([])
+const showFraldasModal = ref(false)
+const fraldaEditTarget = ref(null)
+const editarTodasFraldas = ref(false)
+const novaFralda       = reactive({ nome: '', tamanho: '', quantidade: 50 })
+const salvandoFralda   = ref(false)
+
+function labelFralda(f) {
+  return `${f.nome} - ${f.tamanho} (${f.quantidade} un)`
+}
+
+function chipFralda(f) {
+  const abrev = {
+    'MamyPoko Fralda Calça Super Proteção': 'MP Super',
+    'MamyPoko Fralda Calça Dia & Noite': 'MP Dia/Noite',
+    'Pampers Confort Sec': 'Confort Sec',
+    'Pampers': 'Pampers',
+    'Babysec Premium': 'Babysec',
+  }
+  return `${abrev[f.nome] || f.nome} ${f.tamanho}·${f.quantidade}`
+}
+
+async function carregarFraldas() {
+  const { data } = await supabase
+    .from('fraldas')
+    .select('*')
+    .order('nome')
+    .order('tamanho')
+    .order('quantidade')
+  fraldas.value = data || []
+}
+
+async function vincularFralda(convidado, nomeFralda) {
+  const { error } = await supabase
+    .from('convidados')
+    .update({ fralda: nomeFralda })
+    .eq('id', convidado.id)
+  if (error) {
+    showToast('Erro ao vincular fralda.')
+    return false
+  }
+  convidado.fralda = nomeFralda
+  showToast(nomeFralda ? `Fralda vinculada a ${convidado.nome}` : `Fralda removida de ${convidado.nome}`)
+  return true
+}
+
+function abrirEditarFralda(c) {
+  fraldaEditTarget.value = c
+}
+
+function fecharEditarFralda() {
+  fraldaEditTarget.value = null
+}
+
+function toggleEditarTodasFraldas() {
+  editarTodasFraldas.value = !editarTodasFraldas.value
+  if (editarTodasFraldas.value) fecharEditarFralda()
+}
+
+async function escolherFralda(nomeFralda) {
+  if (!fraldaEditTarget.value) return
+  const ok = await vincularFralda(fraldaEditTarget.value, nomeFralda)
+  if (ok) fecharEditarFralda()
+}
+
+async function adicionarFralda() {
+  const nome = novaFralda.nome.trim()
+  const tamanho = novaFralda.tamanho.trim().toUpperCase()
+  const quantidade = Number(novaFralda.quantidade)
+  if (!nome || !tamanho || !quantidade) return
+  salvandoFralda.value = true
+  const { error } = await supabase.from('fraldas').insert({ nome, tamanho, quantidade })
+  salvandoFralda.value = false
+  if (error) {
+    showToast(error.code === '23505' ? 'Essa fralda já existe.' : 'Erro ao adicionar fralda.')
+    return
+  }
+  Object.assign(novaFralda, { nome: '', tamanho: '', quantidade: 50 })
+  showToast('Fralda cadastrada!')
+  carregarFraldas()
+}
+
+async function excluirFralda(f) {
+  if (!confirm(`Excluir "${labelFralda(f)}" do catálogo?`)) return
+  await supabase.from('fraldas').delete().eq('id', f.id)
+  showToast('Fralda removida do catálogo.')
+  carregarFraldas()
 }
 
 // ── link do convidado ─────────────────────────────────────────
@@ -506,8 +729,82 @@ function formatDate(iso) {
 .nome-confirmed { color: #28a745; }
 .td-zap    { font-size: 11px; color: #4a5a7a; display: block; margin-top: 2px; }
 .td-peso   { white-space: nowrap; color: #2c3e6b; font-weight: 600; }
-.td-fralda { color: #4a5a7a; max-width: 200px; }
+.td-fralda { color: #4a5a7a; max-width: 220px; min-width: 140px; }
+.td-fralda-bulk { max-width: 320px; min-width: 200px; }
 .td-empty  { color: #ccc; }
+.fralda-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.fralda-cell-bulk {
+  flex-direction: column;
+  gap: 6px;
+}
+.btn-fraldas-bulk-active {
+  background: rgba(212,168,83,.18);
+  border-color: #d4a853;
+  color: #8a6818;
+  font-weight: 700;
+}
+.fralda-atual {
+  flex: 1;
+  font-weight: 600;
+  color: #2c3e6b;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.btn-fralda-edit {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  line-height: 1;
+  opacity: .55;
+  transition: opacity .15s, background .15s;
+}
+.btn-fralda-edit:hover {
+  opacity: 1;
+  background: rgba(212,168,83,.15);
+}
+.fralda-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.fralda-atalhos-modal { margin-top: 8px; }
+.fralda-atalhos-pick { margin-top: 4px; }
+.fralda-atalhos-pick .fralda-chip { max-width: none; }
+.fralda-chip {
+  background: rgba(44,62,107,.06);
+  border: 1px solid rgba(44,62,107,.15);
+  border-radius: 14px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: #2c3e6b;
+  cursor: pointer;
+  line-height: 1.3;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all .15s ease;
+}
+.fralda-chip:hover { background: rgba(212,168,83,.18); border-color: #d4a853; color: #a07820; }
+.fralda-chip.active {
+  background: rgba(212,168,83,.25);
+  border-color: #d4a853;
+  color: #8a6818;
+  font-weight: 700;
+}
+.fralda-chip-clear {
+  color: #856404;
+  background: #fff3cd;
+  border-color: rgba(133,100,4,.25);
+}
 .td-status { white-space: nowrap; }
 .td-date   { display: block; font-size: 10px; color: #4a5a7a; margin-top: 2px; }
 .td-link   { white-space: nowrap; }
@@ -563,9 +860,59 @@ function formatDate(iso) {
   padding: 28px 24px;
   box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(212,168,83,.3);
 }
+.modal-card-wide { max-width: 480px; }
 .modal-title { font-family: 'Dancing Script', cursive; font-size: 28px; color: #1a2744; margin-bottom: 18px; }
+.modal-hint { font-size: 13px; color: #4a5a7a; margin: -10px 0 16px; line-height: 1.4; }
 .modal-form  { display: flex; flex-direction: column; gap: 12px; }
 .modal-footer { display: flex; gap: 10px; margin-top: 6px; justify-content: flex-end; }
+
+.fraldas-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.fraldas-add-form > input,
+.fraldas-add-row input {
+  background: rgba(255,255,255,.7);
+  border: 1.5px solid rgba(212,168,83,.4);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: #1a2744;
+  outline: none;
+}
+.fraldas-add-form > input:focus,
+.fraldas-add-row input:focus { border-color: #d4a853; box-shadow: 0 0 0 3px rgba(212,168,83,.15); }
+.fraldas-add-row {
+  display: flex;
+  gap: 8px;
+}
+.fraldas-add-row input:first-child { width: 90px; flex: 0 0 90px; }
+.fraldas-add-row input:nth-child(2) { width: 80px; flex: 0 0 80px; }
+.fraldas-lista {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: rgba(255,255,255,.45);
+  border-radius: 12px;
+  border: 1px solid rgba(212,168,83,.25);
+}
+.fraldas-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(212,168,83,.15);
+  font-size: 13px;
+  color: #1a2744;
+}
+.fraldas-lista li:last-child { border-bottom: none; }
+.fraldas-lista-empty { color: #4a5a7a !important; justify-content: center !important; }
 
 .modal-enter-active { transition: opacity .3s ease; }
 .modal-leave-active { transition: opacity .25s ease; }

@@ -1,4 +1,25 @@
 -- ─────────────────────────────────────────────
+-- SEED — Fraldas (catálogo — distribuicao_fraldas_cha.csv)
+-- ─────────────────────────────────────────────
+
+insert into fraldas (nome, tamanho, quantidade) values
+('MamyPoko Fralda Calça Super Proteção', 'G', 50),
+('MamyPoko Fralda Calça Super Proteção', 'M', 38),
+('MamyPoko Fralda Calça Super Proteção', 'G', 38),
+('MamyPoko Fralda Calça Dia & Noite',    'G', 50),
+('MamyPoko Fralda Calça Dia & Noite',    'G', 38),
+('Pampers',                              'M', 44),
+('Pampers',                              'P', 26),
+('Pampers Confort Sec',                  'G', 60),
+('Pampers Confort Sec',                  'G', 70),
+('Pampers Confort Sec',                  'M', 70),
+('Babysec Premium',                      'G', 60),
+('Babysec Premium',                      'G', 48),
+('Babysec Premium',                      'M', 68),
+('Babysec Premium',                      'M', 60)
+on conflict (nome, tamanho, quantidade) do nothing;
+
+-- ─────────────────────────────────────────────
 -- SEED — Convidados do Chá do Lorenzo
 -- Gerado a partir de semente.txt
 -- Nome limpo para exibição no convite | peso = nº de pessoas

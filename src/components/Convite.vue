@@ -43,18 +43,18 @@
               <div class="card-bg" />
 
               <!-- Decorações flutuantes -->
-              <img class="deco deco-planet"   :style="parallax(0.8,-12,-8)" src="/src/assets/images/planeta.png" alt="" />
-              <img class="deco deco-star deco-star-1" :style="parallax(1.2, 8, 5)" src="/src/assets/images/estrela.png" alt="" />
-              <img class="deco deco-star deco-star-2" :style="parallax(0.6,-5,10)" src="/src/assets/images/estrela.png" alt="" />
-              <img class="deco deco-cloud deco-cloud-1" :style="parallax(0.5, 5,-5)" src="/src/assets/images/nuvem.png" alt="" />
-              <img class="deco deco-cloud deco-cloud-2" :style="parallax(0.4,-8, 8)" src="/src/assets/images/nuvem.png" alt="" />
-              <img class="deco deco-cloud deco-cloud-3" :style="parallax(0.7, 6,-3)" src="/src/assets/images/nuvem.png" alt="" />
+              <img class="deco deco-planet"   :style="parallax(0.8,-12,-8)" src="../assets/images/planeta.png" alt="" />
+              <img class="deco deco-star deco-star-1" :style="parallax(1.2, 8, 5)" src="../assets/images/estrela.png" alt="" />
+              <img class="deco deco-star deco-star-2" :style="parallax(0.6,-5,10)" src="../assets/images/estrela.png" alt="" />
+              <img class="deco deco-cloud deco-cloud-1" :style="parallax(0.5, 5,-5)" src="../assets/images/nuvem.png" alt="" />
+              <img class="deco deco-cloud deco-cloud-2" :style="parallax(0.4,-8, 8)" src="../assets/images/nuvem.png" alt="" />
+              <img class="deco deco-cloud deco-cloud-3" :style="parallax(0.7, 6,-3)" src="../assets/images/nuvem.png" alt="" />
 
               <!-- Coroa -->
               <div class="crown-area">
-                <img class="crown-img" src="/src/assets/images/estrela.png" alt="" />
+                <img class="crown-img" src="../assets/images/estrela.png" alt="" />
                 <div class="crown-emoji">👑</div>
-                <img class="crown-img" src="/src/assets/images/estrela.png" alt="" />
+                <img class="crown-img" src="../assets/images/estrela.png" alt="" />
               </div>
 
               <!-- Oval + títulos -->
@@ -80,9 +80,15 @@
                 <span class="convidado-ornamento">✦</span>
                 <p class="convidado-para-label">para</p>
                 <p class="convidado-para-nome">{{ convidadoNome }}</p>
-                <div v-if="convidadoFralda" class="convidado-fralda" :class="{ destaque: rsvpSent }">
+                <div v-if="fraldaInfo && !rsvpSent" class="convidado-fralda">
                   <p class="convidado-fralda-label">Sugestão de Fralda</p>
-                  <p class="convidado-fralda-tamanho">{{ convidadoFralda }}</p>
+                  <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho">
+                    Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                  </p>
+                  <p class="fralda-display-marca">{{ fraldaInfo.marca }}</p>
+                  <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd">
+                    cerca de {{ fraldaInfo.quantidade }} unidades
+                  </p>
                   <p class="convidado-fralda-frase">Trocar fralda é um esporte —<br>contamos com você nessa maratona!</p>
                 </div>
               </div>
@@ -92,12 +98,12 @@
               <!-- Informações -->
               <div class="info-list">
                 <div class="info-item">
-                  <div class="info-icon"><img src="/src/assets/images/relogio.png" alt="hora" /></div>
+                  <div class="info-icon"><img src="../assets/images/relogio.png" alt="hora" /></div>
                   <div class="info-text"><span class="info-label">Hora:</span><span class="info-value">16:00</span></div>
                 </div>
                 <div class="info-divider" />
                 <div class="info-item">
-                  <div class="info-icon"><img src="/src/assets/images/estrela.png" alt="local" /></div>
+                  <div class="info-icon"><img src="../assets/images/estrela.png" alt="local" /></div>
                   <div class="info-text"><span class="info-label">Local:</span><span class="info-value">Salão de festa do condomínio</span></div>
                 </div>
                 <div class="info-divider" />
@@ -114,7 +120,7 @@
 
               <!-- Ilustração -->
               <div class="illustration-area">
-                <img class="menino-img" :style="parallax(1.0,-3,2)" src="/src/assets/images/menino-com-gato.png" alt="Pequeno Príncipe" />
+                <img class="menino-img" :style="parallax(1.0,-3,2)" src="../assets/images/menino-com-gato.png" alt="Pequeno Príncipe" />
               </div>
 
               <!-- Botões RSVP -->
@@ -126,9 +132,15 @@
                 </template>
                 <template v-else-if="rsvpSent">
                   <div class="rsvp-confirmed-msg">🎉 Presença confirmada!<br/>Mal podemos esperar para te ver!</div>
-                  <div v-if="convidadoFralda" class="presente-box">
+                  <div v-if="fraldaInfo" class="presente-box">
                     <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p class="presente-fralda">{{ convidadoFralda }}</p>
+                    <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho presente-tamanho">
+                      Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                    </p>
+                    <p class="fralda-display-marca presente-marca">{{ fraldaInfo.marca }}</p>
+                    <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd presente-qtd">
+                      cerca de {{ fraldaInfo.quantidade }} unidades
+                    </p>
                     <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
                   </div>
                   <button v-if="convidadoId" class="rsvp-cancelar" @click.stop="cancelarPresenca">Não vou mais</button>
@@ -155,10 +167,10 @@
               <div class="card-bg" />
 
               <!-- Decorações em watermark -->
-              <img class="deco deco-planet  wm" src="/src/assets/images/planeta.png" alt="" />
-              <img class="deco deco-cloud deco-cloud-1 wm" src="/src/assets/images/nuvem.png" alt="" />
-              <img class="deco deco-cloud deco-cloud-3 wm" src="/src/assets/images/nuvem.png" alt="" />
-              <img class="deco deco-star deco-star-1 wm" src="/src/assets/images/estrela.png" alt="" />
+              <img class="deco deco-planet  wm" src="../assets/images/planeta.png" alt="" />
+              <img class="deco deco-cloud deco-cloud-1 wm" src="../assets/images/nuvem.png" alt="" />
+              <img class="deco deco-cloud deco-cloud-3 wm" src="../assets/images/nuvem.png" alt="" />
+              <img class="deco deco-star deco-star-1 wm" src="../assets/images/estrela.png" alt="" />
 
               <!-- Cabeçalho -->
               <div class="back-header">
@@ -200,9 +212,15 @@
                   <div class="success-icon">🎉</div>
                   <p class="success-title">Presença Confirmada!</p>
                   <p class="success-msg">Mal podemos esperar para te ver!<br/>Lorenzo já está animado! 👑</p>
-                  <div v-if="convidadoFralda" class="presente-box">
+                  <div v-if="fraldaInfo" class="presente-box">
                     <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p class="presente-fralda">{{ convidadoFralda }}</p>
+                    <p v-if="fraldaInfo.tamanho" class="fralda-display-tamanho presente-tamanho">
+                      Tamanho <span>{{ fraldaInfo.tamanho }}</span>
+                    </p>
+                    <p class="fralda-display-marca presente-marca">{{ fraldaInfo.marca }}</p>
+                    <p v-if="fraldaInfo.quantidade" class="fralda-display-qtd presente-qtd">
+                      cerca de {{ fraldaInfo.quantidade }} unidades
+                    </p>
                     <p class="presente-hint">Lorenzo vai adorar essa fraldinha 💙</p>
                   </div>
                 </div>
@@ -270,6 +288,15 @@ const convidadoNome     = ref('')
 const convidadoFralda   = ref('')
 const buscandoConvidado = ref(true)
 const convidadoOk       = ref(false)
+
+function parseFralda(raw) {
+  if (!raw) return null
+  const m = raw.match(/^(.+?)\s*-\s*(\S+)\s*\((\d+)\s*un\)$/)
+  if (m) return { marca: m[1].trim(), tamanho: m[2].trim(), quantidade: m[3] }
+  return { marca: raw, tamanho: null, quantidade: null }
+}
+
+const fraldaInfo = computed(() => parseFralda(convidadoFralda.value))
 
 // ── estado básico ──────────────────────────────────────────────
 const opened   = ref(false)
@@ -690,13 +717,6 @@ onMounted(async () => {
   border-radius: 14px;
   background: rgba(212,168,83,.08);
   border: 1px solid rgba(212,168,83,.28);
-  transition: all .35s ease;
-}
-.convidado-fralda.destaque {
-  background: linear-gradient(160deg, rgba(212,168,83,.22), rgba(212,168,83,.08));
-  border-color: rgba(212,168,83,.65);
-  box-shadow: 0 0 22px rgba(212,168,83,.22);
-  padding: 14px 16px 14px;
 }
 .convidado-fralda-label {
   font-family: 'Lato', sans-serif;
@@ -707,29 +727,53 @@ onMounted(async () => {
   letter-spacing: 2px;
   margin: 0 0 4px;
 }
-.convidado-fralda.destaque .convidado-fralda-label {
-  font-size: 10px;
-}
 .convidado-fralda-frase {
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-size: 10.5px;
   color: #5a6a8a;
   line-height: 1.55;
-  margin: 6px 0 0;
+  margin: 8px 0 0;
 }
-.convidado-fralda-tamanho {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px;
+.fralda-display-tamanho {
+  font-family: 'Lato', sans-serif;
+  font-size: 11px;
   font-weight: 600;
+  color: #2c3e6b;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 2px 0 0;
+  line-height: 1.2;
+}
+.fralda-display-tamanho span {
+  display: block;
+  font-family: 'Dancing Script', cursive;
+  font-size: 34px;
+  font-weight: 700;
   color: #1a2744;
-  letter-spacing: .3px;
-  margin: 0;
-  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-top: 2px;
 }
-.convidado-fralda.destaque .convidado-fralda-tamanho {
-  font-size: 18px;
+.fralda-display-marca {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5a7a;
+  line-height: 1.35;
+  margin: 4px 0 0;
 }
+.fralda-display-qtd {
+  font-family: 'Lato', sans-serif;
+  font-size: 9px;
+  color: rgba(74, 90, 122, .5);
+  margin: 3px 0 0;
+  letter-spacing: .2px;
+}
+.presente-tamanho span { font-size: 38px; }
+.presente-marca { font-size: 14px; }
+.presente-qtd { font-size: 9px; margin-bottom: 2px; }
 
 .crown-area  { display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 20px 0; position:relative; z-index:6; }
 .crown-img   { width:24px; opacity:.7; }
@@ -818,14 +862,6 @@ onMounted(async () => {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: #d4a853;
-  margin: 0 0 4px;
-}
-.presente-fralda {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a2744;
-  line-height: 1.3;
   margin: 0 0 6px;
 }
 .presente-hint {
