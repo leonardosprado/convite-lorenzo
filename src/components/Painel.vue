@@ -75,19 +75,94 @@
       <!-- Ações -->
       <div class="actions-row">
         <input v-model="busca" class="input-busca" placeholder="🔍  Buscar convidado..." />
-        <button class="btn-primary btn-sm" @click="showAddModal = true">+ Adicionar</button>
-        <button class="btn-outline btn-sm" @click="showFraldasModal = true">Marcas</button>
-        <button
-          class="btn-outline btn-sm"
-          :class="{ 'btn-fraldas-bulk-active': editarTodasFraldas }"
-          @click="toggleEditarTodasFraldas"
-        >
-          {{ editarTodasFraldas ? '✓ Concluir tamanhos' : 'Editar todos tamanhos' }}
-        </button>
-        <button class="btn-outline btn-sm" @click="exportarLinks">Exportar links</button>
+        <div class="actions-btns">
+          <button class="btn-primary btn-sm" @click="showAddModal = true">+ Adicionar</button>
+          <button class="btn-outline btn-sm" @click="showFraldasModal = true">Marcas</button>
+          <button
+            class="btn-outline btn-sm"
+            :class="{ 'btn-fraldas-bulk-active': editarTodasFraldas }"
+            @click="toggleEditarTodasFraldas"
+          >
+            {{ editarTodasFraldas ? '✓ Concluir' : 'Tamanhos' }}
+          </button>
+          <button class="btn-outline btn-sm desktop-only-inline" @click="exportarLinks">Exportar</button>
+        </div>
       </div>
 
-      <!-- Tabela -->
+      <p v-if="editarTodasFraldas" class="bulk-hint">
+        Toque no tamanho desejado em cada card para atribuir rápido.
+      </p>
+
+      <!-- Cards (mobile) -->
+      <div class="cards-wrap">
+        <article
+          v-for="c in convidadosFiltrados"
+          :key="'card-' + c.id"
+          class="guest-card"
+          :class="{ confirmed: c.confirmado }"
+        >
+          <div class="guest-card-top">
+            <div class="guest-card-info">
+              <h3 class="guest-card-nome">{{ c.nome }}</h3>
+              <p class="guest-card-meta">
+                {{ c.peso }} {{ c.peso === 1 ? 'pessoa' : 'pessoas' }}
+                <span v-if="c.whatsapp"> · {{ c.whatsapp }}</span>
+              </p>
+            </div>
+            <span class="badge" :class="c.confirmado ? 'badge-ok' : 'badge-pend'">
+              {{ c.confirmado ? '✓ Confirmado' : 'Pendente' }}
+            </span>
+          </div>
+
+          <div class="guest-card-tamanho">
+            <div class="guest-card-tam-head">
+              <span class="guest-card-tam-label">Fralda</span>
+              <strong v-if="c.tamanho_fralda" class="guest-card-tam-valor">Tamanho {{ c.tamanho_fralda }}</strong>
+              <strong v-else class="guest-card-tam-vazio">Sem tamanho</strong>
+            </div>
+            <div v-if="editarTodasFraldas" class="fralda-atalhos fralda-atalhos-touch">
+              <button
+                v-for="t in TAMANHOS"
+                :key="t"
+                type="button"
+                class="fralda-chip"
+                :class="{ active: c.tamanho_fralda === t }"
+                @click="vincularTamanho(c, t)"
+              >
+                {{ t }}
+              </button>
+              <button
+                v-if="c.tamanho_fralda"
+                type="button"
+                class="fralda-chip fralda-chip-clear"
+                @click="vincularTamanho(c, null)"
+              >
+                limpar
+              </button>
+            </div>
+            <button
+              v-else
+              type="button"
+              class="btn-tam-edit"
+              @click="abrirEditarFralda(c)"
+            >
+              {{ c.tamanho_fralda ? 'Trocar tamanho' : 'Definir tamanho' }}
+            </button>
+          </div>
+
+          <div class="guest-card-actions">
+            <button class="btn-copy" @click="copiarLink(c, 1)">Convite 1</button>
+            <button class="btn-copy btn-copy-2" @click="copiarLink(c, 2)">Convite 2</button>
+            <button class="btn-card-edit" @click="editarConvidado(c)" title="Editar">✏️</button>
+            <button class="btn-card-del" @click="confirmarDelete(c)" title="Excluir">🗑</button>
+          </div>
+        </article>
+
+        <p v-if="loading" class="table-loading">Carregando...</p>
+        <p v-if="!loading && convidadosFiltrados.length === 0" class="table-empty">Nenhum convidado encontrado.</p>
+      </div>
+
+      <!-- Tabela (desktop) -->
       <div class="table-wrap">
         <table class="convidados-table">
           <thead>
@@ -425,11 +500,11 @@ const chartOptions = {
   maintainAspectRatio: true,
   plugins: {
     legend: {
-      position: 'right',
+      position: 'bottom',
       labels: {
         font: { family: "'Lato', sans-serif", size: 12 },
         color: '#1a2744',
-        padding: 14,
+        padding: 12,
         usePointStyle: true,
         pointStyle: 'circle',
         generateLabels(chart) {
@@ -829,6 +904,12 @@ function formatDate(iso) {
   padding: 16px 24px;
   flex-wrap: wrap;
 }
+.actions-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 .input-busca {
   flex: 1;
   min-width: 180px;
@@ -843,6 +924,140 @@ function formatDate(iso) {
   transition: border-color .2s;
 }
 .input-busca:focus { border-color: #d4a853; }
+.bulk-hint {
+  margin: 0 24px 8px;
+  padding: 10px 14px;
+  background: rgba(212,168,83,.15);
+  border: 1px solid rgba(212,168,83,.35);
+  border-radius: 12px;
+  font-size: 13px;
+  color: #8a6818;
+}
+
+/* ══════════════════════════════════
+   CARDS (mobile)
+══════════════════════════════════ */
+.cards-wrap {
+  display: none;
+  padding: 0 16px 24px;
+  flex-direction: column;
+  gap: 12px;
+}
+.guest-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(212,168,83,.22);
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.guest-card.confirmed {
+  background: linear-gradient(160deg, #f8fff8, #fff);
+  border-color: rgba(40,167,69,.25);
+}
+.guest-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.guest-card-nome {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: #1a2744;
+  line-height: 1.25;
+}
+.guest-card.confirmed .guest-card-nome { color: #28a745; }
+.guest-card-meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #4a5a7a;
+}
+.guest-card-tamanho {
+  background: rgba(245,240,232,.7);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.guest-card-tam-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.guest-card-tam-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(44,62,107,.55);
+}
+.guest-card-tam-valor {
+  font-family: 'Dancing Script', cursive;
+  font-size: 22px;
+  color: #1a2744;
+  line-height: 1;
+}
+.guest-card-tam-vazio {
+  font-size: 13px;
+  color: #aaa;
+  font-weight: 500;
+}
+.btn-tam-edit {
+  width: 100%;
+  border: 1.5px dashed rgba(212,168,83,.5);
+  background: rgba(255,255,255,.7);
+  border-radius: 12px;
+  padding: 10px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a07820;
+  cursor: pointer;
+}
+.fralda-atalhos-touch {
+  gap: 8px;
+}
+.fralda-atalhos-touch .fralda-chip {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  max-width: none;
+}
+.guest-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.guest-card-actions .btn-copy,
+.guest-card-actions .btn-copy-2 {
+  margin: 0;
+  width: 100%;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-card-edit,
+.btn-card-del {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(44,62,107,.12);
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-card-del { border-color: rgba(192,57,43,.15); }
+.desktop-only-inline { display: inline-flex; }
 
 /* ══════════════════════════════════
    TABELA
@@ -1092,4 +1307,100 @@ function formatDate(iso) {
 .toast-leave-active { transition: opacity .25s ease; }
 .toast-enter-from  { opacity: 0; transform: translateX(-50%) translateY(10px); }
 .toast-leave-to    { opacity: 0; }
+
+/* ══════════════════════════════════
+   RESPONSIVO MOBILE
+══════════════════════════════════ */
+@media (max-width: 768px) {
+  .painel-header { padding: 12px 16px; }
+  .header-title { font-size: 20px; }
+  .header-sub { display: none; }
+  .stats-row { padding: 14px 16px 0; gap: 8px; }
+  .stat-card { padding: 12px 8px; border-radius: 12px; }
+  .stat-value { font-size: 28px; }
+  .chart-wrap { padding: 12px 16px 0; }
+  .chart-card { padding: 14px; }
+  .chart-pie-box { max-width: 100%; }
+
+  .actions-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+    gap: 10px;
+    position: sticky;
+    top: 56px;
+    z-index: 25;
+    background: rgba(245,240,232,.94);
+    backdrop-filter: blur(8px);
+  }
+  .input-busca {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 16px;
+    font-size: 16px; /* evita zoom no iOS */
+  }
+  .actions-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .actions-btns .btn-sm {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 8px;
+    font-size: 12px;
+  }
+  .desktop-only-inline { display: none !important; }
+  .bulk-hint { margin: 0 16px 10px; }
+
+  .table-wrap { display: none; }
+  .cards-wrap { display: flex; }
+
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-card,
+  .modal-card-wide {
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+  .modal-footer .btn-outline,
+  .modal-footer .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  .fralda-atalhos-modal .fralda-chip {
+    min-width: 48px;
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 12px;
+    max-width: none;
+  }
+  .toast {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    width: auto;
+    white-space: normal;
+    text-align: center;
+  }
+  .toast-enter-from,
+  .toast-leave-to { transform: translateY(10px); }
+}
+
+@media (min-width: 769px) {
+  .cards-wrap { display: none; }
+  .table-wrap { display: block; }
+}
 </style>
+

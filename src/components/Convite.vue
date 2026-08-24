@@ -17,7 +17,7 @@
       <div v-if="convidadoOk && !opened" class="envelope-screen" @click="openInvite">
         <div class="envelope-wrap">
           <div class="envelope-glow" />
-          <div class="crown-open">👑</div>
+          <img class="crown-open" src="../assets/images/coroa.png" alt="Coroa" />
           <div class="envelope-title">Chá do</div>
           <div class="envelope-subtitle">Pequeno Príncipe</div>
           <div class="envelope-name">Lorenzo</div>
@@ -35,7 +35,7 @@
           <!-- flip-container: altura animada + aplica o scaleX durante o flip -->
           <div
             class="flip-container"
-            :style="{ height: containerHeight, ...flipCardStyle }"
+            :style="flipContainerStyle"
           >
 
             <!-- ═══ FRENTE ═══ -->
@@ -53,7 +53,7 @@
               <!-- Coroa -->
               <div class="crown-area">
                 <img class="crown-img" src="../assets/images/estrela.png" alt="" />
-                <div class="crown-emoji">👑</div>
+                <img class="crown-main" src="../assets/images/coroa.png" alt="Coroa" />
                 <img class="crown-img" src="../assets/images/estrela.png" alt="" />
               </div>
 
@@ -75,56 +75,55 @@
                 <p>Antes que eu saia correndo da barriga da mamãe,<br />venha celebrar a minha chegada e<br />encher meus papais de carinho<br />(e fraldinhas!).</p>
               </div>
 
-              <!-- Bloco personalizado do convidado -->
-              <div v-if="convidadoNome" class="convidado-bloco">
-                <span class="convidado-ornamento">✦</span>
+              <!-- Nome do convidado -->
+              <div v-if="convidadoNome" class="guest-hero">
                 <p class="convidado-para-label">para</p>
-                <p class="convidado-para-nome">{{ convidadoNome }}</p>
-                <div v-if="fraldaTamanho && !rsvpSent" class="convidado-fralda">
-                  <p class="convidado-fralda-label">Sugestão de Fralda</p>
-                  <p class="fralda-display-tamanho">
-                    Tamanho <span>{{ fraldaTamanho }}</span>
-                  </p>
-                  <div v-if="marcasFralda.length" class="fralda-marcas">
-                    <p class="fralda-marcas-label">Sugestões</p>
-                    <ul class="fralda-marcas-lista">
-                      <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
-                    </ul>
+                <p class="guest-hero-nome">{{ convidadoNome }}</p>
+                <span class="guest-hero-heart">💛</span>
+              </div>
+
+              <!-- Dois cards: presente + evento -->
+              <div class="info-cards">
+                <div class="info-card info-card-presente">
+                  <div class="info-card-icon">
+                    <Gift :size="20" :stroke-width="1.75" />
+                  </div>
+                  <p class="info-card-kicker">Sugestão de presente</p>
+                  <template v-if="fraldaTamanho">
+                    <p class="info-card-title">Fralda tamanho {{ fraldaTamanho }}</p>
+                    <p v-if="marcasLinha" class="info-card-brands">{{ marcasLinha }}</p>
                     <button
                       v-if="temMaisMarcas"
                       type="button"
-                      class="fralda-ver-mais"
+                      class="info-card-more"
                       @click.stop="toggleFraldasExpandidas"
                     >
                       {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
                     </button>
+                  </template>
+                  <p v-else class="info-card-brands">Sua presença é o melhor presente</p>
+                </div>
+
+                <div class="info-card info-card-evento">
+                  <div class="info-card-row">
+                    <div class="info-chip">
+                      <Calendar :size="15" :stroke-width="1.75" class="info-chip-ico" />
+                      <span>26/09/2026</span>
+                    </div>
+                    <span class="info-chip-sep" />
+                    <div class="info-chip">
+                      <Clock :size="15" :stroke-width="1.75" class="info-chip-ico" />
+                      <span>16h00</span>
+                    </div>
                   </div>
-                  <p class="convidado-fralda-frase">Trocar fralda é um esporte —<br>contamos com você nessa maratona!</p>
-                </div>
-              </div>
-
-              <div class="divider" />
-
-              <!-- Informações -->
-              <div class="info-list">
-                <div class="info-item">
-                  <div class="info-icon"><img src="../assets/images/relogio.png" alt="hora" /></div>
-                  <div class="info-text"><span class="info-label">Hora:</span><span class="info-value">16:00</span></div>
-                </div>
-                <div class="info-divider" />
-                <div class="info-item">
-                  <div class="info-icon"><img src="../assets/images/estrela.png" alt="local" /></div>
-                  <div class="info-text"><span class="info-label">Local:</span><span class="info-value">Salão de festa do condomínio</span></div>
-                </div>
-                <div class="info-divider" />
-                <div class="info-item">
-                  <div class="info-icon"><span class="icon-emoji">📅</span></div>
-                  <div class="info-text"><span class="info-label">Data:</span><span class="info-value">26/09/2026</span></div>
-                </div>
-                <div class="info-divider" />
-                <div class="info-item">
-                  <div class="info-icon"><span class="icon-emoji">🏠</span></div>
-                  <div class="info-text"><span class="info-label">Endereço:</span><span class="info-value">Travessa Ita, 53 - Condomínio Eldorado Parque Tijuca</span></div>
+                  <div class="info-card-dotline" />
+                  <div class="info-card-local">
+                    <MapPin :size="15" :stroke-width="1.75" class="info-chip-ico info-chip-ico-pin" />
+                    <div>
+                      <p class="info-local-nome">Salão de festas do condomínio</p>
+                      <p class="info-local-end">Travessa Ita, 53<br />Condomínio Eldorado Parque Tijuca</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -142,26 +141,16 @@
                 </template>
                 <template v-else-if="rsvpSent">
                   <div class="rsvp-confirmed-msg">🎉 Presença confirmada!<br/>Mal podemos esperar para te ver!</div>
-                  <div v-if="fraldaTamanho" class="presente-box">
-                    <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p class="fralda-display-tamanho presente-tamanho">
-                      Tamanho <span>{{ fraldaTamanho }}</span>
-                    </p>
-                    <div v-if="marcasFralda.length" class="fralda-marcas">
-                      <p class="fralda-marcas-label">Sugestões</p>
-                      <ul class="fralda-marcas-lista">
-                        <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
-                      </ul>
-                      <button
-                        v-if="temMaisMarcas"
-                        type="button"
-                        class="fralda-ver-mais"
-                        @click.stop="toggleFraldasExpandidas"
-                      >
-                        {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
-                      </button>
-                    </div>
-                  </div>
+                  <a
+                    class="btn-localizacao"
+                    :href="MAPS_URL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    @click.stop
+                  >
+                    <MapPin :size="16" :stroke-width="2" />
+                    Ver localização no mapa
+                  </a>
                   <button v-if="convidadoId" class="rsvp-cancelar" @click.stop="cancelarPresenca">Não vou mais</button>
                 </template>
                 <template v-else>
@@ -231,26 +220,16 @@
                   <div class="success-icon">🎉</div>
                   <p class="success-title">Presença Confirmada!</p>
                   <p class="success-msg">Mal podemos esperar para te ver!<br/>Lorenzo já está animado! 👑</p>
-                  <div v-if="fraldaTamanho" class="presente-box">
-                    <p class="presente-kicker">Sugestão de Fralda</p>
-                    <p class="fralda-display-tamanho presente-tamanho">
-                      Tamanho <span>{{ fraldaTamanho }}</span>
-                    </p>
-                    <div v-if="marcasFralda.length" class="fralda-marcas">
-                      <p class="fralda-marcas-label">Sugestões</p>
-                      <ul class="fralda-marcas-lista">
-                        <li v-for="marca in marcasVisiveis" :key="marca">{{ marca }}</li>
-                      </ul>
-                      <button
-                        v-if="temMaisMarcas"
-                        type="button"
-                        class="fralda-ver-mais"
-                        @click.stop="toggleFraldasExpandidas"
-                      >
-                        {{ fraldasExpandidas ? 'Ver menos' : 'Ver mais marcas' }}
-                      </button>
-                    </div>
-                  </div>
+                  <a
+                    class="btn-localizacao"
+                    :href="MAPS_URL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    @click.stop
+                  >
+                    <MapPin :size="16" :stroke-width="2" />
+                    Ver localização no mapa
+                  </a>
                 </div>
               </form>
 
@@ -302,15 +281,68 @@
       </div>
     </Transition>
 
+    <!-- Modal pós-confirmação: presente / mimos -->
+    <Transition name="modal">
+      <div v-if="showPresenteModal" class="modal-overlay" @click.self="fecharPresenteModal">
+        <div class="modal-card modal-presente paper">
+          <button class="modal-close" @click="fecharPresenteModal">✕</button>
+          <div class="modal-crown">🎉</div>
+          <h2 class="modal-title">Presença confirmada!</h2>
+          <p class="modal-subtitle">
+            <template v-if="convidadoNome">Obrigado, {{ convidadoNome }}!<br /></template>
+            Mal podemos esperar para te ver.
+          </p>
+
+          <div class="info-card info-card-presente modal-presente-card">
+            <div class="info-card-icon">
+              <Gift :size="22" :stroke-width="1.75" />
+            </div>
+            <p class="info-card-kicker">Sugestão de presente</p>
+            <template v-if="fraldaTamanho">
+              <p class="info-card-title">Fralda tamanho {{ fraldaTamanho }}</p>
+              <p v-if="marcasLinhaSorteadas" class="info-card-brands">{{ marcasLinhaSorteadas }}</p>
+            </template>
+            <p v-else class="info-card-brands">Sua presença é o melhor presente</p>
+          </div>
+
+          <button
+            v-if="fraldaTamanho && marcasFralda.length"
+            type="button"
+            class="btn-mimos"
+            @click="mimosAbertos = !mimosAbertos"
+          >
+            <Gift :size="16" :stroke-width="2" />
+            {{ mimosAbertos ? 'Ocultar mimos' : 'Ver os mimos' }}
+          </button>
+
+          <ul v-if="mimosAbertos" class="mimos-lista">
+            <li v-for="marca in marcasFralda" :key="marca">{{ marca }}</li>
+          </ul>
+
+          <a
+            class="btn-localizacao btn-localizacao-modal"
+            :href="MAPS_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MapPin :size="16" :stroke-width="2" />
+            Ver localização no mapa
+          </a>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { Gift, Calendar, Clock, MapPin } from '@lucide/vue'
 import { supabase } from '../supabase.js'
 import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
 
 // ── convidado via URL (?convidado=uuid) ────────────────────────
+const MAPS_URL = 'https://www.google.com/maps?q=-16.693334579467773,-49.32759475708008&z=17&hl=pt-BR'
 const convidadoId       = new URLSearchParams(window.location.search).get('convidado')
 const convidadoNome     = ref('')
 const fraldaTamanho     = ref('')
@@ -335,8 +367,43 @@ const marcasVisiveis = computed(() =>
 
 const temMaisMarcas = computed(() => marcasFralda.value.length > 3)
 
+const marcasCurtas = computed(() => {
+  const abrev = {
+    'MamyPoko Fralda Calça Super Proteção': 'MamyPoko',
+    'MamyPoko Fralda Calça Dia & Noite': 'MamyPoko',
+    'Pampers Confort Sec': 'Pampers',
+    'Pampers': 'Pampers',
+    'Babysec Premium': 'BabySec',
+  }
+  const lista = marcasVisiveis.value.map(m => abrev[m] || m)
+  return [...new Set(lista)]
+})
+
+const marcasLinha = computed(() => marcasCurtas.value.join(' • '))
+
+const marcasLinhaSorteadas = computed(() => {
+  const abrev = {
+    'MamyPoko Fralda Calça Super Proteção': 'MamyPoko',
+    'MamyPoko Fralda Calça Dia & Noite': 'MamyPoko',
+    'Pampers Confort Sec': 'Pampers',
+    'Pampers': 'Pampers',
+    'Babysec Premium': 'BabySec',
+  }
+  return [...new Set(marcasSorteadas.value.map(m => abrev[m] || m))].join(' • ')
+})
+
 function toggleFraldasExpandidas() {
   fraldasExpandidas.value = !fraldasExpandidas.value
+}
+
+function abrirPresenteModal() {
+  mimosAbertos.value = false
+  showPresenteModal.value = true
+}
+
+function fecharPresenteModal() {
+  showPresenteModal.value = false
+  mimosAbertos.value = false
 }
 
 async function carregarMarcasFralda() {
@@ -350,9 +417,11 @@ async function carregarMarcasFralda() {
 }
 
 // ── estado básico ──────────────────────────────────────────────
-const opened   = ref(false)
-const showRsvp = ref(false)
-const rsvpSent = ref(false)
+const opened            = ref(false)
+const showRsvp          = ref(false)
+const showPresenteModal = ref(false)
+const mimosAbertos      = ref(false)
+const rsvpSent          = ref(false)
 const mouseX   = ref(0)
 const mouseY   = ref(0)
 const ticking  = ref(false)
@@ -384,6 +453,7 @@ const OPEN_TTL = 2 * 60 * 1000
 function openInvite() {
   localStorage.setItem(OPEN_KEY, Date.now())
   opened.value = true
+  if (rsvpSent.value) abrirPresenteModal()
 }
 
 // ── parallax / tilt ───────────────────────────────────────────
@@ -433,41 +503,21 @@ function parallax(speed, ox, oy) {
 // Fase "in":  card cresce de 0 até 1 mostrando o verso
 // Sem backface-visibility, sem overflow + preserve-3d bug do Safari
 
-async function startFlip() {
-  if (isFlipping.value) return
-  isFlipping.value = true
-
-  flipPhase.value = 'out'
-  await wait(380)
-
-  isFlipped.value = true
-
-  flipPhase.value = 'in'
-  await wait(380)
-
-  flipPhase.value = ''
-  isFlipping.value = false
-}
-
-async function flipBack() {
-  if (isFlipping.value) return
-  isFlipping.value = true
-
-  flipPhase.value = 'out'
-  await wait(380)
-
-  isFlipped.value = false
-  rsvpSent.value = false
-  Object.assign(rsvpForm, { nome: '', whatsapp: '', pessoas: '1' })
-
-  flipPhase.value = 'in'
-  await wait(380)
-
-  flipPhase.value = ''
-  isFlipping.value = false
-}
-
 function wait(ms) { return new Promise(r => setTimeout(r, ms)) }
+
+function medirAlturaFrente() {
+  if (!frontRef.value) return null
+  return frontRef.value.scrollHeight
+}
+
+function travarAlturaParaFlip() {
+  const h = medirAlturaFrente()
+  if (h) containerHeight.value = h + 'px'
+}
+
+function soltarAltura() {
+  containerHeight.value = 'auto'
+}
 
 // estilo dinâmico do card visível durante o flip
 const flipCardStyle = computed(() => {
@@ -486,28 +536,68 @@ const flipCardStyle = computed(() => {
   return {}
 })
 
+const flipContainerStyle = computed(() => ({
+  height: containerHeight.value,
+  ...flipCardStyle.value,
+}))
+
+async function startFlip() {
+  if (isFlipping.value) return
+  isFlipping.value = true
+  travarAlturaParaFlip()
+
+  flipPhase.value = 'out'
+  await wait(380)
+
+  isFlipped.value = true
+
+  flipPhase.value = 'in'
+  await wait(380)
+
+  flipPhase.value = ''
+  isFlipping.value = false
+}
+
+async function flipBack() {
+  if (isFlipping.value) return
+  isFlipping.value = true
+  travarAlturaParaFlip()
+
+  flipPhase.value = 'out'
+  await wait(380)
+
+  isFlipped.value = false
+  rsvpSent.value = false
+  Object.assign(rsvpForm, { nome: '', whatsapp: '', pessoas: '1' })
+
+  flipPhase.value = 'in'
+  await wait(380)
+
+  flipPhase.value = ''
+  isFlipping.value = false
+  soltarAltura()
+}
 // ── RSVP modal (modo 1) ───────────────────────────────────────
 function onRsvp() { showRsvp.value = true }
 
 async function submitRsvpDireto() {
   await confirmarNoSupabase()
   rsvpSent.value = true
+  abrirPresenteModal()
 }
 
 async function submitRsvp() {
   await confirmarNoSupabase()
   rsvpSent.value = true
-  setTimeout(() => {
-    showRsvp.value = false
-    rsvpSent.value = false
-    Object.assign(rsvpForm, { nome: convidadoNome.value || '', whatsapp: '', pessoas: '1' })
-  }, 2000)
+  showRsvp.value = false
+  abrirPresenteModal()
 }
 
 // ── RSVP flip (modo 2) ────────────────────────────────────────
 async function submitFlipRsvp() {
   await confirmarNoSupabase()
   rsvpSent.value = true
+  abrirPresenteModal()
 }
 
 // ── salva confirmação no Supabase ─────────────────────────────
@@ -529,17 +619,7 @@ async function confirmarNoSupabase() {
   }).eq('id', convidadoId)
 }
 
-function ajustarAltura() {
-  nextTick(() => {
-    if (frontRef.value && !isFlipped.value) {
-      containerHeight.value = frontRef.value.scrollHeight + 'px'
-    }
-  })
-}
-
-watch(rsvpSent, ajustarAltura)
-
-// ── init: carrega convidado + trava altura do card ────────────
+// ── init: carrega convidado ───────────────────────────────────
 onMounted(async () => {
   if (convidadoId) {
     const [{ data }, ] = await Promise.all([
@@ -563,13 +643,10 @@ onMounted(async () => {
   if (!convidadoOk.value) return
 
   const last = Number(localStorage.getItem(OPEN_KEY) || 0)
-  if (Date.now() - last < OPEN_TTL) opened.value = true
-
-  nextTick(() => {
-    if (frontRef.value) {
-      containerHeight.value = frontRef.value.scrollHeight + 'px'
-    }
-  })
+  if (Date.now() - last < OPEN_TTL) {
+    opened.value = true
+    if (rsvpSent.value) abrirPresenteModal()
+  }
 })
 </script>
 
@@ -619,7 +696,14 @@ onMounted(async () => {
   0%,100% { opacity:.5; transform:translate(-50%,-50%) scale(1); }
   50%     { opacity: 1; transform:translate(-50%,-50%) scale(1.15); }
 }
-.crown-open  { font-size:64px; display:block; margin-bottom:12px; animation:crown-bounce 1.8s ease-in-out infinite; filter:drop-shadow(0 0 24px rgba(212,168,83,.8)); }
+.crown-open  {
+  width: 72px;
+  height: auto;
+  display: block;
+  margin: 0 auto 12px;
+  animation: crown-bounce 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px rgba(212,168,83,.8));
+}
 @keyframes crown-bounce { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-12px) rotate(3deg)} }
 
 .envelope-title    { font-family:'Playfair Display',serif; color:rgba(255,255,255,.75); font-size:18px; letter-spacing:3px; text-transform:uppercase; }
@@ -645,6 +729,8 @@ onMounted(async () => {
   justify-content: center;
   perspective: 1200px;
   perspective-origin: 50% 35%;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .reveal-enter-active { transition: all 1s cubic-bezier(.16,1,.3,1); }
@@ -663,7 +749,7 @@ onMounted(async () => {
   position: relative;
   transform-origin: center center;
   will-change: transform;
-  /* altura travada no tamanho da frente — não muda ao virar */
+  /* height: auto no dia a dia; só trava em px durante o flip */
 }
 
 /* ═══════════════════════════════════════════════
@@ -733,20 +819,11 @@ onMounted(async () => {
 /* ═══════════════════════════════════════════════
    FRENTE — conteúdo
 ═══════════════════════════════════════════════ */
-.convidado-bloco {
-  margin: 2px 0 0;
-  padding: 10px 20px 12px;
+.guest-hero {
   text-align: center;
+  padding: 4px 20px 2px;
   position: relative;
   z-index: 6;
-}
-.convidado-ornamento {
-  display: block;
-  font-size: 10px;
-  color: #d4a853;
-  letter-spacing: 4px;
-  margin-bottom: 3px;
-  opacity: .7;
 }
 .convidado-para-label {
   font-family: 'Lato', sans-serif;
@@ -757,111 +834,151 @@ onMounted(async () => {
   letter-spacing: 2px;
   margin: 0 0 2px;
 }
-.convidado-para-nome {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 20px;
-  color: #1a2744;
-  line-height: 1.2;
+.guest-hero-nome {
   margin: 0;
-}
-.convidado-fralda {
-  margin-top: 10px;
-  padding: 10px 14px 12px;
-  border-radius: 14px;
-  background: rgba(212,168,83,.08);
-  border: 1px solid rgba(212,168,83,.28);
-}
-.convidado-fralda-label {
-  font-family: 'Lato', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  color: #d4a853;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin: 0 0 4px;
-}
-.convidado-fralda-frase {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: 10.5px;
-  color: #5a6a8a;
-  line-height: 1.55;
-  margin: 8px 0 0;
-}
-.fralda-display-tamanho {
-  font-family: 'Lato', sans-serif;
-  font-size: 11px;
+  font-size: 22px;
   font-weight: 600;
-  color: #2c3e6b;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin: 2px 0 0;
+  color: #1a2744;
   line-height: 1.2;
 }
-.fralda-display-tamanho span {
+.guest-hero-heart {
   display: block;
-  font-family: 'Dancing Script', cursive;
-  font-size: 34px;
-  font-weight: 700;
-  color: #1a2744;
-  text-transform: none;
-  letter-spacing: 0;
-  line-height: 1;
+  font-size: 12px;
   margin-top: 2px;
 }
-.fralda-marcas {
-  margin-top: 8px;
-  text-align: left;
+
+.info-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px 16px 4px;
+  position: relative;
+  z-index: 6;
 }
-.fralda-marcas-label {
-  font-family: 'Lato', sans-serif;
+.info-card {
+  background: rgba(255,255,255,.34);
+  border: 1.5px solid rgba(212,168,83,.45);
+  border-radius: 16px;
+  padding: 12px 10px 11px;
+  text-align: center;
+}
+.info-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: #d4a853;
+}
+.info-chip-ico {
+  color: #d4a853;
+  flex-shrink: 0;
+}
+.info-chip-ico-pin {
+  margin-top: 1px;
+}
+.info-card-kicker {
+  margin: 0 0 6px;
+  font-family: 'Playfair Display', serif;
   font-size: 9px;
   font-weight: 700;
-  color: rgba(74, 90, 122, .55);
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  color: #d4a853;
+}
+.info-card-title {
   margin: 0 0 4px;
-}
-.fralda-marcas-lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.fralda-marcas-lista li {
   font-family: 'Playfair Display', serif;
-  font-size: 12px;
-  color: #4a5a7a;
-  line-height: 1.45;
-  padding: 2px 0;
-  border-bottom: 1px solid rgba(212,168,83,.15);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2744;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: .3px;
 }
-.fralda-marcas-lista li:last-child { border-bottom: none; }
-.fralda-ver-mais {
-  display: block;
-  width: 100%;
+.info-card-brands {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  color: #4a5a7a;
+  line-height: 1.4;
+}
+.info-card-more {
   margin-top: 6px;
-  padding: 4px 0 0;
   background: none;
   border: none;
-  border-top: 1px dashed rgba(212,168,83,.35);
   font-family: 'Lato', sans-serif;
   font-size: 10px;
   font-weight: 600;
   color: #d4a853;
-  letter-spacing: .3px;
   cursor: pointer;
-  text-align: center;
-  transition: color .2s;
+  padding: 0;
 }
-.fralda-ver-mais:hover { color: #a07820; }
-.presente-tamanho span { font-size: 38px; }
-.presente-box .fralda-marcas { margin-top: 10px; }
-.presente-box .fralda-marcas-lista li { font-size: 13px; }
+.info-card-evento {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+.info-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.info-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Lato', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a2744;
+}
+.info-chip-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(212,168,83,.45);
+  flex-shrink: 0;
+}
+.info-card-dotline {
+  border-top: 1px dashed rgba(212,168,83,.45);
+}
+.info-card-local {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.info-local-nome {
+  margin: 0 0 2px;
+  font-family: 'Playfair Display', serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1a2744;
+  line-height: 1.25;
+}
+.info-local-end {
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  color: #4a5a7a;
+  line-height: 1.35;
+}
+
+@media (max-width: 420px) {
+  .info-cards { grid-template-columns: 1fr; gap: 8px; }
+}
 
 .crown-area  { display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 20px 0; position:relative; z-index:6; }
 .crown-img   { width:24px; opacity:.7; }
-.crown-emoji { font-size:30px; filter:drop-shadow(0 4px 16px rgba(212,168,83,.6)); animation:crown-bounce 2.5s ease-in-out infinite; }
+.crown-main  {
+  width: 42px;
+  height: auto;
+  filter: drop-shadow(0 4px 16px rgba(212,168,83,.6));
+  animation: crown-bounce 2.5s ease-in-out infinite;
+}
 
 .oval-frame {
   position:relative; margin:0 24px; padding:6px 16px 10px;
@@ -926,6 +1043,34 @@ onMounted(async () => {
 
 .rsvp-hint { font-family:'Lato',sans-serif; font-size:11px; color:rgba(44,62,107,.45); margin-top:8px; letter-spacing:.5px; }
 .rsvp-confirmed-msg { font-family:'Playfair Display',serif; font-size:15px; color:#2c3e6b; text-align:center; padding:10px 0 4px; line-height:1.5; animation:success-pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+.btn-localizacao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin: 8px 0 4px;
+  padding: 11px 16px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(212,168,83,.55);
+  background: linear-gradient(135deg, rgba(212,168,83,.18), rgba(212,168,83,.08));
+  color: #1a2744;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: .3px;
+  box-shadow: 0 4px 14px rgba(212,168,83,.2);
+  transition: all .25s ease;
+}
+.btn-localizacao:hover {
+  background: linear-gradient(135deg, rgba(212,168,83,.3), rgba(212,168,83,.12));
+  border-color: #d4a853;
+  transform: translateY(-1px);
+}
+.btn-localizacao :deep(svg) {
+  color: #d4a853;
+}
 .rsvp-cancelar { display:block; margin:4px auto 0; background:none; border:none; font-family:'Lato',sans-serif; font-size:11px; color:rgba(44,62,107,.3); cursor:pointer; letter-spacing:.5px; text-decoration:underline; padding:2px; transition:color .2s; }
 .rsvp-cancelar:hover { color:rgba(44,62,107,.6); }
 @keyframes success-pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
@@ -1043,6 +1188,58 @@ onMounted(async () => {
   cursor:pointer; transition:all .3s ease; box-shadow:0 8px 24px rgba(44,62,107,.35);
 }
 .modal-submit:disabled { background:linear-gradient(135deg,#4a8a4a 0%,#2d5a2d 100%); color:#90ee90; }
+
+.modal-presente {
+  padding-bottom: 36px;
+  max-height: min(92dvh, 720px);
+  overflow-y: auto;
+}
+.modal-presente-card {
+  margin: 0 0 14px;
+  text-align: center;
+}
+.btn-mimos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #2c3e6b 0%, #1a2744 100%);
+  color: #d4a853;
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(44,62,107,.35), 0 0 0 1px rgba(212,168,83,.3);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.btn-mimos:active { transform: translateY(-1px) scale(1.01); }
+.btn-mimos :deep(svg) { color: #d4a853; }
+.mimos-lista {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.55);
+  border: 1.5px solid rgba(212,168,83,.4);
+  max-height: 180px;
+  overflow-y: auto;
+}
+.mimos-lista li {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  color: #2c3e6b;
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(44,62,107,.08);
+}
+.mimos-lista li:last-child { border-bottom: none; }
+.btn-localizacao-modal {
+  margin-top: 4px;
+}
 
 .modal-enter-active { transition:opacity .4s ease; }
 .modal-leave-active { transition:opacity .3s ease-in; }

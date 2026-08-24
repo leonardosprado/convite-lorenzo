@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lucide/vue": "^1.33.0",
     "@supabase/supabase-js": "^2.112.3",
     "chart.js": "^4.5.1",
     "vue": "^3.4.0",
