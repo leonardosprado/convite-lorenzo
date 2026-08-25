@@ -141,6 +141,16 @@
                 </template>
                 <template v-else-if="rsvpSent">
                   <div class="rsvp-confirmed-msg">🎉 Presença confirmada!<br/>Mal podemos esperar para te ver!</div>
+                  <div class="hub-actions hub-actions-inline">
+                    <button type="button" class="hub-btn hub-btn-presentes" @click.stop="abrirPresentesModal">
+                      <Gift :size="16" :stroke-width="2" />
+                      Presentes
+                    </button>
+                    <button type="button" class="hub-btn hub-btn-mimos" @click.stop="abrirMimosModal">
+                      <Sparkles :size="16" :stroke-width="2" />
+                      Mimos
+                    </button>
+                  </div>
                   <a
                     class="btn-localizacao"
                     :href="MAPS_URL"
@@ -220,6 +230,16 @@
                   <div class="success-icon">🎉</div>
                   <p class="success-title">Presença Confirmada!</p>
                   <p class="success-msg">Mal podemos esperar para te ver!<br/>Lorenzo já está animado! 👑</p>
+                  <div class="hub-actions hub-actions-inline">
+                    <button type="button" class="hub-btn hub-btn-presentes" @click.stop="abrirPresentesModal">
+                      <Gift :size="16" :stroke-width="2" />
+                      Presentes
+                    </button>
+                    <button type="button" class="hub-btn hub-btn-mimos" @click.stop="abrirMimosModal">
+                      <Sparkles :size="16" :stroke-width="2" />
+                      Mimos
+                    </button>
+                  </div>
                   <a
                     class="btn-localizacao"
                     :href="MAPS_URL"
@@ -281,11 +301,11 @@
       </div>
     </Transition>
 
-    <!-- Modal pós-confirmação: presente / mimos -->
+    <!-- Modal pós-confirmação (hub) -->
     <Transition name="modal">
-      <div v-if="showPresenteModal" class="modal-overlay" @click.self="fecharPresenteModal">
+      <div v-if="showConfirmadoModal" class="modal-overlay" @click.self="fecharConfirmadoModal">
         <div class="modal-card modal-presente paper">
-          <button class="modal-close" @click="fecharPresenteModal">✕</button>
+          <button class="modal-close" @click="fecharConfirmadoModal">✕</button>
           <div class="modal-crown">🎉</div>
           <h2 class="modal-title">Presença confirmada!</h2>
           <p class="modal-subtitle">
@@ -293,31 +313,34 @@
             Mal podemos esperar para te ver.
           </p>
 
-          <div class="info-card info-card-presente modal-presente-card">
-            <div class="info-card-icon">
-              <Gift :size="22" :stroke-width="1.75" />
-            </div>
-            <p class="info-card-kicker">Sugestão de presente</p>
-            <template v-if="fraldaTamanho">
-              <p class="info-card-title">Fralda tamanho {{ fraldaTamanho }}</p>
-              <p v-if="marcasLinhaSorteadas" class="info-card-brands">{{ marcasLinhaSorteadas }}</p>
-            </template>
-            <p v-else class="info-card-brands">Sua presença é o melhor presente</p>
-          </div>
-
+          <!-- Sugestão de presente com tamanho + CTA marcas -->
           <button
-            v-if="fraldaTamanho && marcasFralda.length"
+            v-if="fraldaTamanho"
             type="button"
-            class="btn-mimos"
-            @click="mimosAbertos = !mimosAbertos"
+            class="hub-presente-card"
+            @click="abrirPresentesModal"
           >
-            <Gift :size="16" :stroke-width="2" />
-            {{ mimosAbertos ? 'Ocultar mimos' : 'Ver os mimos' }}
+            <div class="hub-presente-top">
+              <span class="hub-presente-ico">
+                <Gift :size="20" :stroke-width="1.75" />
+              </span>
+              <span class="hub-presente-kicker">Sugestão de presente</span>
+            </div>
+            <p class="hub-presente-tamanho">Fralda tamanho {{ fraldaTamanho }}</p>
+            <span class="hub-presente-cta">
+              Ver marcas sugeridas
+              <span class="hub-presente-arrow">→</span>
+            </span>
           </button>
 
-          <ul v-if="mimosAbertos" class="mimos-lista">
-            <li v-for="marca in marcasFralda" :key="marca">{{ marca }}</li>
-          </ul>
+          <div v-else class="info-card info-card-presente modal-presente-card">
+            <p class="info-card-brands">Sua presença é o melhor presente</p>
+          </div>
+
+          <button type="button" class="hub-btn hub-btn-mimos hub-btn-mimos-full" @click="abrirMimosModal">
+            <Sparkles :size="18" :stroke-width="2" />
+            Ver mimos
+          </button>
 
           <a
             class="btn-localizacao btn-localizacao-modal"
@@ -332,14 +355,118 @@
       </div>
     </Transition>
 
+    <!-- Modal Presentes (fraldas) -->
+    <Transition name="modal">
+      <div v-if="showPresentesModal" class="modal-overlay" @click.self="fecharPresentesModal">
+        <div class="modal-card modal-presente paper">
+          <button class="modal-close" @click="fecharPresentesModal">✕</button>
+          <div class="modal-crown">
+            <Gift :size="36" :stroke-width="1.5" color="#d4a853" />
+          </div>
+          <h2 class="modal-title">Presentes</h2>
+          <p class="modal-subtitle">Sugestão de fraldinhas pro Lorenzo</p>
+
+          <div class="info-card info-card-presente modal-presente-card">
+            <template v-if="fraldaTamanho">
+              <p class="info-card-title">Fralda tamanho {{ fraldaTamanho }}</p>
+              <p class="info-card-brands">Sugestão de marcas</p>
+            </template>
+            <p v-else class="info-card-brands">Sua presença é o melhor presente</p>
+          </div>
+
+          <div v-if="presentesComFoto.length" class="mimos-grid">
+            <article v-for="m in presentesComFoto" :key="m.id" class="mimo-card">
+              <div class="mimo-foto-wrap">
+                <img :src="m.src" :alt="m.label" class="mimo-foto" loading="lazy" />
+              </div>
+              <p class="mimo-nome">{{ m.label }}</p>
+            </article>
+          </div>
+
+          <button type="button" class="btn-voltar-hub" @click="voltarAoHub('presentes')">
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Modal Mimos -->
+    <Transition name="modal">
+      <div v-if="showMimosModal" class="modal-overlay" @click.self="fecharMimosModal">
+        <div class="modal-card modal-presente paper">
+          <button class="modal-close" @click="fecharMimosModal">✕</button>
+          <div class="modal-crown">
+            <Sparkles :size="36" :stroke-width="1.5" color="#d4a853" />
+          </div>
+          <h2 class="modal-title">Mimos</h2>
+          <p class="modal-subtitle">Ideias de carinho pro dia a dia do bebê</p>
+
+          <ul class="mimos-lista-itens">
+            <li v-for="item in LISTA_MIMOS" :key="item">
+              <span class="mimo-bullet">✦</span>
+              <span>{{ item }}</span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-voltar-hub" @click="voltarAoHub('mimos')">
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Gift, Calendar, Clock, MapPin } from '@lucide/vue'
+import { Gift, Calendar, Clock, MapPin, Sparkles } from '@lucide/vue'
 import { supabase } from '../supabase.js'
 import ConviteNaoEncontrado from './ConviteNaoEncontrado.vue'
+
+import fotoBabySec from '../assets/fraldas/BabySec Premium Shortinho.png'
+import fotoMamyPoko from '../assets/fraldas/MamyPoko Calça Dia & Noite.png'
+import fotoPampers from '../assets/fraldas/Pampers Premium Care.webp'
+
+const LISTA_MIMOS = [
+  'Lenço umedecido sem álcool',
+  'Shampoo para recém-nascido',
+  'Condicionador',
+  'Sabonete líquido para recém-nascido',
+  'Pomada para assadura',
+  'Óleo de bebê',
+  'Toalha de banho com capuz',
+  'Body / macacão RN',
+  'Meias e luvinhas',
+  'Escova de cabelo macia',
+]
+
+/** Fotos locais ↔ nomes do catálogo (match flexível pelo nome no banco) */
+const FRALDA_FOTOS = [
+  {
+    id: 'babysec',
+    label: 'BabySec Premium Shortinho',
+    src: fotoBabySec,
+    match: /baby\s*sec/i,
+  },
+  {
+    id: 'mamypoko',
+    label: 'MamyPoko Dia & Noite',
+    src: fotoMamyPoko,
+    match: /mamy\s*poko/i,
+  },
+  {
+    id: 'pampers',
+    label: 'Pampers Premium Care',
+    src: fotoPampers,
+    match: /pampers/i,
+  },
+]
+
+function resolverFraldaFoto(nome) {
+  if (!nome) return null
+  return FRALDA_FOTOS.find(f => f.match.test(nome)) || null
+}
 
 // ── convidado via URL (?convidado=uuid) ────────────────────────
 const MAPS_URL = 'https://www.google.com/maps?q=-16.693334579467773,-49.32759475708008&z=17&hl=pt-BR'
@@ -371,39 +498,77 @@ const marcasCurtas = computed(() => {
   const abrev = {
     'MamyPoko Fralda Calça Super Proteção': 'MamyPoko',
     'MamyPoko Fralda Calça Dia & Noite': 'MamyPoko',
+    'MamyPoko Calça Dia & Noite': 'MamyPoko',
     'Pampers Confort Sec': 'Pampers',
+    'Pampers Premium Care': 'Pampers',
     'Pampers': 'Pampers',
     'Babysec Premium': 'BabySec',
+    'BabySec Premium Shortinho': 'BabySec',
   }
-  const lista = marcasVisiveis.value.map(m => abrev[m] || m)
+  const lista = marcasVisiveis.value.map(m => {
+    const foto = resolverFraldaFoto(m)
+    return abrev[m] || foto?.label?.split(' ')[0] || m
+  })
   return [...new Set(lista)]
 })
 
 const marcasLinha = computed(() => marcasCurtas.value.join(' • '))
 
-const marcasLinhaSorteadas = computed(() => {
-  const abrev = {
-    'MamyPoko Fralda Calça Super Proteção': 'MamyPoko',
-    'MamyPoko Fralda Calça Dia & Noite': 'MamyPoko',
-    'Pampers Confort Sec': 'Pampers',
-    'Pampers': 'Pampers',
-    'Babysec Premium': 'BabySec',
+/** Marcas únicas com foto para a modal de presentes */
+const presentesComFoto = computed(() => {
+  const seen = new Set()
+  const out = []
+  const nomes = marcasFralda.value.length
+    ? marcasFralda.value
+    : FRALDA_FOTOS.map(f => f.label)
+
+  for (const nome of nomes) {
+    const item = resolverFraldaFoto(nome)
+    if (!item || seen.has(item.id)) continue
+    seen.add(item.id)
+    out.push(item)
   }
-  return [...new Set(marcasSorteadas.value.map(m => abrev[m] || m))].join(' • ')
+  return out
 })
+
+function abrirConfirmadoModal() {
+  showMimosModal.value = false
+  showPresentesModal.value = false
+  showConfirmadoModal.value = true
+}
+
+function fecharConfirmadoModal() {
+  showConfirmadoModal.value = false
+}
+
+function abrirPresentesModal() {
+  showConfirmadoModal.value = false
+  showMimosModal.value = false
+  showPresentesModal.value = true
+}
+
+function fecharPresentesModal() {
+  showPresentesModal.value = false
+}
+
+function abrirMimosModal() {
+  showConfirmadoModal.value = false
+  showPresentesModal.value = false
+  showMimosModal.value = true
+}
+
+function fecharMimosModal() {
+  showMimosModal.value = false
+}
+
+function voltarAoHub(de) {
+  if (de === 'presentes') showPresentesModal.value = false
+  if (de === 'mimos') showMimosModal.value = false
+  showConfirmadoModal.value = true
+}
 
 function toggleFraldasExpandidas() {
   fraldasExpandidas.value = !fraldasExpandidas.value
-}
-
-function abrirPresenteModal() {
-  mimosAbertos.value = false
-  showPresenteModal.value = true
-}
-
-function fecharPresenteModal() {
-  showPresenteModal.value = false
-  mimosAbertos.value = false
 }
 
 async function carregarMarcasFralda() {
@@ -417,11 +582,12 @@ async function carregarMarcasFralda() {
 }
 
 // ── estado básico ──────────────────────────────────────────────
-const opened            = ref(false)
-const showRsvp          = ref(false)
-const showPresenteModal = ref(false)
-const mimosAbertos      = ref(false)
-const rsvpSent          = ref(false)
+const opened              = ref(false)
+const showRsvp            = ref(false)
+const showConfirmadoModal = ref(false)
+const showPresentesModal  = ref(false)
+const showMimosModal      = ref(false)
+const rsvpSent            = ref(false)
 const mouseX   = ref(0)
 const mouseY   = ref(0)
 const ticking  = ref(false)
@@ -453,7 +619,7 @@ const OPEN_TTL = 2 * 60 * 1000
 function openInvite() {
   localStorage.setItem(OPEN_KEY, Date.now())
   opened.value = true
-  if (rsvpSent.value) abrirPresenteModal()
+  if (rsvpSent.value) abrirConfirmadoModal()
 }
 
 // ── parallax / tilt ───────────────────────────────────────────
@@ -583,21 +749,21 @@ function onRsvp() { showRsvp.value = true }
 async function submitRsvpDireto() {
   await confirmarNoSupabase()
   rsvpSent.value = true
-  abrirPresenteModal()
+  abrirConfirmadoModal()
 }
 
 async function submitRsvp() {
   await confirmarNoSupabase()
   rsvpSent.value = true
   showRsvp.value = false
-  abrirPresenteModal()
+  abrirConfirmadoModal()
 }
 
 // ── RSVP flip (modo 2) ────────────────────────────────────────
 async function submitFlipRsvp() {
   await confirmarNoSupabase()
   rsvpSent.value = true
-  abrirPresenteModal()
+  abrirConfirmadoModal()
 }
 
 // ── salva confirmação no Supabase ─────────────────────────────
@@ -645,7 +811,7 @@ onMounted(async () => {
   const last = Number(localStorage.getItem(OPEN_KEY) || 0)
   if (Date.now() - last < OPEN_TTL) {
     opened.value = true
-    if (rsvpSent.value) abrirPresenteModal()
+    if (rsvpSent.value) abrirConfirmadoModal()
   }
 })
 </script>
@@ -1195,50 +1361,226 @@ onMounted(async () => {
   overflow-y: auto;
 }
 .modal-presente-card {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   text-align: center;
 }
-.btn-mimos {
+.hub-presente-card {
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 16px 14px 14px;
+  text-align: center;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255,255,255,.85), rgba(245,236,212,.9));
+  border: 1.5px solid rgba(212,168,83,.55);
+  box-shadow: 0 8px 24px rgba(44,62,107,.1), 0 0 0 1px rgba(212,168,83,.12);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+}
+.hub-presente-card:hover,
+.hub-presente-card:active {
+  transform: translateY(-2px);
+  border-color: #d4a853;
+  box-shadow: 0 12px 28px rgba(44,62,107,.16), 0 0 0 1px rgba(212,168,83,.25);
+}
+.hub-presente-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.hub-presente-ico {
+  display: inline-flex;
+  color: #d4a853;
+}
+.hub-presente-kicker {
+  font-family: 'Playfair Display', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #d4a853;
+}
+.hub-presente-tamanho {
+  margin: 0 0 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a2744;
+  letter-spacing: .2px;
+}
+.hub-presente-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #2c3e6b 0%, #1a2744 100%);
+  color: #d4a853;
+  font-family: 'Lato', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  box-shadow: 0 6px 16px rgba(44,62,107,.28);
+}
+.hub-presente-arrow {
+  transition: transform .2s ease;
+}
+.hub-presente-card:hover .hub-presente-arrow,
+.hub-presente-card:active .hub-presente-arrow {
+  transform: translateX(3px);
+}
+.hub-hint {
+  margin: 0 0 12px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  color: #4a5a7a;
+  text-align: center;
+}
+.hub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.hub-actions-inline {
+  margin: 8px 0 10px;
+}
+.hub-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
-  margin: 0 0 10px;
-  padding: 13px 18px;
-  border: none;
+  padding: 13px 12px;
   border-radius: 50px;
-  background: linear-gradient(135deg, #2c3e6b 0%, #1a2744 100%);
-  color: #d4a853;
+  border: none;
   font-family: 'Playfair Display', serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(44,62,107,.35), 0 0 0 1px rgba(212,168,83,.3);
   transition: transform .2s ease, box-shadow .2s ease;
 }
-.btn-mimos:active { transform: translateY(-1px) scale(1.01); }
-.btn-mimos :deep(svg) { color: #d4a853; }
-.mimos-lista {
-  list-style: none;
-  margin: 0 0 14px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.55);
-  border: 1.5px solid rgba(212,168,83,.4);
-  max-height: 180px;
-  overflow-y: auto;
+.hub-btn:active { transform: translateY(-1px) scale(1.01); }
+.hub-btn-presentes {
+  background: linear-gradient(135deg, #2c3e6b 0%, #1a2744 100%);
+  color: #d4a853;
+  box-shadow: 0 8px 22px rgba(44,62,107,.3), 0 0 0 1px rgba(212,168,83,.28);
 }
-.mimos-lista li {
+.hub-btn-presentes :deep(svg) { color: #d4a853; }
+.hub-btn-mimos {
+  background: linear-gradient(135deg, #f5ecd4 0%, #efe3c2 100%);
+  color: #1a2744;
+  box-shadow: 0 6px 18px rgba(212,168,83,.25), 0 0 0 1.5px rgba(212,168,83,.5);
+}
+.hub-btn-mimos :deep(svg) { color: #c9962e; }
+.hub-btn-mimos-full {
+  width: 100%;
+  margin: 0 0 14px;
+}
+.mimos-lista-itens {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 6px 4px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mimos-lista-itens li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+  border: 1.5px solid rgba(212,168,83,.35);
   font-family: 'Lato', sans-serif;
   font-size: 13px;
-  color: #2c3e6b;
-  padding: 8px 4px;
-  border-bottom: 1px solid rgba(44,62,107,.08);
+  color: #1a2744;
+  line-height: 1.35;
 }
-.mimos-lista li:last-child { border-bottom: none; }
+.mimo-bullet {
+  color: #d4a853;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.btn-voltar-hub {
+  display: block;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 11px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(44,62,107,.2);
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  color: rgba(44,62,107,.65);
+  cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn-voltar-hub:hover,
+.btn-voltar-hub:active {
+  border-color: rgba(212,168,83,.55);
+  color: #c9962e;
+  background: rgba(212,168,83,.06);
+}
+.mimos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.mimo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.72);
+  border: 1.5px solid rgba(212,168,83,.45);
+  box-shadow: 0 6px 18px rgba(44,62,107,.08);
+  animation: success-pop .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+.mimo-card:nth-child(2) { animation-delay: .06s; }
+.mimo-card:nth-child(3) { animation-delay: .12s; }
+.mimo-foto-wrap {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(212,168,83,.12), transparent 70%),
+    #f7f1e4;
+  overflow: hidden;
+}
+.mimo-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  filter: drop-shadow(0 4px 10px rgba(26,39,68,.18));
+}
+.mimo-nome {
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #1a2744;
+  letter-spacing: .2px;
+}
 .btn-localizacao-modal {
   margin-top: 4px;
+}
+
+@media (max-width: 360px) {
+  .mimos-grid { gap: 6px; }
+  .mimo-nome { font-size: 9px; }
 }
 
 .modal-enter-active { transition:opacity .4s ease; }

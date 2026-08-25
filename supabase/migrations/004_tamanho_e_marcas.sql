@@ -101,9 +101,7 @@ create policy "fraldas_delete_admin"
   using (auth.role() = 'authenticated');
 
 insert into fraldas (nome) values
-('Babysec Premium'),
-('MamyPoko Fralda Calça Dia & Noite'),
-('MamyPoko Fralda Calça Super Proteção'),
-('Pampers'),
-('Pampers Confort Sec')
+('BabySec Premium Shortinho'),
+('MamyPoko Calça Dia & Noite'),
+('Pampers Premium Care')
 on conflict (nome) do nothing;

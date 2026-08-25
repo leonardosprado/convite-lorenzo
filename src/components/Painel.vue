@@ -151,8 +151,13 @@
           </div>
 
           <div class="guest-card-actions">
-            <button class="btn-copy" @click="copiarLink(c, 1)">Convite 1</button>
-            <button class="btn-copy btn-copy-2" @click="copiarLink(c, 2)">Convite 2</button>
+            <button class="btn-copy" @click="copiarLink(c)" title="Copiar link">Link</button>
+            <a class="btn-zap" :href="whatsappUrl(c, 'convite')" target="_blank" rel="noopener noreferrer">
+              Convidar
+            </a>
+            <a class="btn-zap btn-zap-lembrete" :href="whatsappUrl(c, 'lembrete')" target="_blank" rel="noopener noreferrer">
+              Lembrar
+            </a>
             <button class="btn-card-edit" @click="editarConvidado(c)" title="Editar">✏️</button>
             <button class="btn-card-del" @click="confirmarDelete(c)" title="Excluir">🗑</button>
           </div>
@@ -232,12 +237,27 @@
                 </span>
               </td>
               <td class="td-link">
-                <button class="btn-copy" @click="copiarLink(c, 1)" :title="linkFor(c, 1)">
-                  Convite 1
+                <button class="btn-copy" @click="copiarLink(c)" :title="linkFor(c)">
+                  Link
                 </button>
-                <button class="btn-copy btn-copy-2" @click="copiarLink(c, 2)" :title="linkFor(c, 2)">
-                  Convite 2
-                </button>
+                <a
+                  class="btn-zap"
+                  :href="whatsappUrl(c, 'convite')"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :title="c.whatsapp ? `WhatsApp ${c.whatsapp}` : 'Abrir WhatsApp e escolher contato'"
+                >
+                  Convidar
+                </a>
+                <a
+                  class="btn-zap btn-zap-lembrete"
+                  :href="whatsappUrl(c, 'lembrete')"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Lembrete: presente e mimos"
+                >
+                  Lembrar
+                </a>
               </td>
               <td class="td-actions">
                 <button class="btn-icon" @click="editarConvidado(c)" title="Editar">✏️</button>
@@ -620,12 +640,63 @@ async function excluirFralda(f) {
   carregarFraldas()
 }
 
-// ── link do convidado ─────────────────────────────────────────
-function linkFor(c, modelo = 1) {
-  const base = window.location.origin
-  return modelo === 2
-    ? `${base}/2?convidado=${c.id}`
-    : `${base}/?convidado=${c.id}`
+// ── link do convidado + WhatsApp ──────────────────────────────
+function linkFor(c) {
+  return `${window.location.origin}/?convidado=${c.id}`
+}
+
+function primeiroNome(nome = '') {
+  return nome.split(/[,&]| e /i)[0].trim() || 'querido(a)'
+}
+
+function digitsWhatsapp(raw) {
+  if (!raw) return ''
+  let d = String(raw).replace(/\D/g, '')
+  if (!d) return ''
+  // BR sem DDI
+  if (d.length === 10 || d.length === 11) d = '55' + d
+  return d
+}
+
+function textoWhatsapp(c, tipo = 'convite') {
+  const nome = primeiroNome(c.nome)
+  const link = linkFor(c)
+  const sparkles = String.fromCodePoint(0x2728)
+  const crown = String.fromCodePoint(0x1F451)
+  const blueHeart = String.fromCodePoint(0x1F499)
+
+  if (tipo === 'lembrete') {
+    return [
+      `Oi, ${nome}! ${sparkles}`,
+      '',
+      'Passando s\u00f3 pra te lembrar com carinho: o *Ch\u00e1 do Lorenzo* est\u00e1 chegando!',
+      '',
+      'Segue de novo o seu convite, com data, hor\u00e1rio e local:',
+      link,
+      '',
+      `Vai ser uma alegria te ver l\u00e1! ${crown}${blueHeart}`,
+    ].join('\n')
+  }
+
+  return [
+    `Oi, ${nome}! ${crown}`,
+    '',
+    'Com muito carinho, queremos te convidar para o *Ch\u00e1 do Pequeno Pr\u00edncipe do Lorenzo*.',
+    '',
+    'Tem um convite especial s\u00f3 pra voc\u00ea \u2014 \u00e9 s\u00f3 abrir o link:',
+    link,
+    '',
+    `Ser\u00e1 uma alegria ter voc\u00ea com a gente! ${blueHeart}`,
+  ].join('\n')
+}
+
+function whatsappUrl(c, tipo = 'convite') {
+  const texto = encodeURIComponent(textoWhatsapp(c, tipo))
+  const phone = digitsWhatsapp(c.whatsapp)
+  const base = 'https://api.whatsapp.com/send'
+  return phone
+    ? `${base}?phone=${phone}&text=${texto}`
+    : `${base}?text=${texto}`
 }
 
 async function copiarTexto(texto) {
@@ -646,15 +717,14 @@ async function copiarTexto(texto) {
   if (!ok) throw new Error('copy failed')
 }
 
-function copiarLink(c, modelo = 1) {
-  const link = linkFor(c, modelo)
-  copiarTexto(link)
-    .then(() => showToast(`Link ${modelo === 2 ? '(Convite 2) ' : ''}de ${c.nome} copiado!`))
+function copiarLink(c) {
+  copiarTexto(linkFor(c))
+    .then(() => showToast(`Link de ${c.nome} copiado!`))
     .catch(() => showToast('Não foi possível copiar. Tente de novo.'))
 }
 
 function exportarLinks() {
-  const linhas = convidados.value.map(c => `${c.nome}\t${linkFor(c, 1)}\t${linkFor(c, 2)}`)
+  const linhas = convidados.value.map(c => `${c.nome}\t${linkFor(c)}\t${c.whatsapp || ''}`)
   const blob   = new Blob([linhas.join('\n')], { type: 'text/plain' })
   const a      = document.createElement('a')
   a.href       = URL.createObjectURL(blob)
@@ -1030,18 +1100,24 @@ function formatDate(iso) {
   max-width: none;
 }
 .guest-card-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
 .guest-card-actions .btn-copy,
-.guest-card-actions .btn-copy-2 {
+.guest-card-actions .btn-zap {
   margin: 0;
-  width: 100%;
-  padding: 10px 8px;
-  font-size: 12px;
-  font-weight: 600;
+  flex: 1 1 calc(33.33% - 8px);
+  min-width: 0;
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.guest-card-actions .btn-card-edit,
+.guest-card-actions .btn-card-del {
+  flex: 0 0 auto;
 }
 .btn-card-edit,
 .btn-card-del {
@@ -1191,15 +1267,38 @@ function formatDate(iso) {
   cursor: pointer;
   transition: all .2s ease;
   margin-right: 4px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 .btn-copy:hover { background: rgba(212,168,83,.15); border-color: #d4a853; color: #a07820; }
-.btn-copy-2 {
-  background: rgba(212,168,83,.1);
-  border-color: rgba(212,168,83,.35);
+.btn-zap {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(37, 211, 102, .12);
+  border: 1px solid rgba(37, 211, 102, .4);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #128c7e;
+  cursor: pointer;
+  transition: all .2s ease;
+  margin-right: 4px;
+  text-decoration: none;
+}
+.btn-zap:hover { background: rgba(37, 211, 102, .22); border-color: #25d366; color: #075e54; }
+.btn-zap-lembrete {
+  background: rgba(212,168,83,.12);
+  border-color: rgba(212,168,83,.4);
   color: #a07820;
   margin-right: 0;
 }
-.btn-copy-2:hover { background: rgba(212,168,83,.25); border-color: #d4a853; }
+.btn-zap-lembrete:hover {
+  background: rgba(212,168,83,.25);
+  border-color: #d4a853;
+  color: #7a5a14;
+}
 
 .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: background .15s; }
 .btn-icon:hover { background: rgba(0,0,0,.06); }
